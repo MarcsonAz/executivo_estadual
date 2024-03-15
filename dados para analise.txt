@@ -1,0 +1,54 @@
+dados para analise
+
+Totais com dados já tabulados - Brasil
+por sexo e cor tbm
+
+Totais por UF 
+por sexo
+
+Remuneração - somente brasil - 
+média e decis
+
+dados para nivel de escolaridade??
+
+
+
+pontos principais
+ vínculos por sexo, por UF
+ vínculos por cor, por UF
+ remuneração por nível de escolaridade no EE, mas para Brasil todo
+ decis de remuneração, por UF
+
+somente para 2021
+
+pegar lista de ocupações por remuneração
+
+com top 10 e bot 10, olhar nas UFs por cor e por sexo. 
+Foco na comparação entre os resultados de UFs, logo pegar as ocupações nas UFs
+
+
+
+fazer agora:
+Tabela de UF-v12 para ter as informações de remuneração
+
+uf_v12_
+
+vinculos_v6_resumos.brasil_v12_corxsexoxpoderxesfera
+
+
+
+fazer
+
+brasil_v12_remuneracao_poderxesfera
+brasil_v12_remuneracao_decil_poderxesfera
+
+
+
+
+
+
+
+
+
+
+
