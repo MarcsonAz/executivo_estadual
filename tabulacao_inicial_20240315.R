@@ -58,6 +58,12 @@ query3 <- paste(
 
 df3 <- DBI::dbGetQuery(con, query3)
 
+query4 <- paste(
+  "SELECT *",
+  "FROM vinculos_v6_resumos.uf_v12_poderxesfera")
+
+df4 <- DBI::dbGetQuery(con, query4)
+
 # tabular
 
 tabela <- list()

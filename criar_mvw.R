@@ -61,3 +61,27 @@ DBI::dbSendQuery(con, qq)
 
 
 
+# vinculos_v6_resumos.uf_v12_corxpoderxesfera source
+qq2 <- paste(
+  "
+CREATE MATERIALIZED VIEW vinculos_v6_resumos.uf_v12_corxpoderxesfera
+TABLESPACE pg_default
+AS SELECT v.ano,
+    e.id AS codigo,
+    e.descricao_estado AS uf,
+    r.poder,
+    r.esfera,
+    cor.raca_script_r_resultado,
+    count(v.*) AS total_vinculos_publicos
+   FROM vinculos_v6.tb_vinculos v
+     JOIN rfb.tb_ipea_rfb_publicos r ON r.cnpj_texto::text = v.id_estab::text
+     LEFT JOIN site_adeb_v3.tb_cpf_publico_raca_cor_v2_2004_2021 cor ON v.cpf::text = cor.cpf
+     LEFT JOIN ( VALUES (11,'RO'::text), (12,'AC'::text), (13,'AM'::text), (14,'RR'::text), (15,'PA'::text), (16,'AP'::text), (17,'TO'::text), (21,'MA'::text), (22,'PI'::text), (23,'CE'::text), (24,'RN'::text), (25,'PB'::text), (26,'PE'::text), (27,'AL'::text), (28,'SE'::text), (29,'BA'::text), (31,'MG'::text), (32,'ES'::text), (33,'RJ'::text), (35,'SP'::text), (41,'PR'::text), (42,'SC'::text), (43,'RS'::text), (50,'MS'::text), (51,'MT'::text), (52,'GO'::text), (53,'DF'::text)) e(id, descricao_estado) ON e.id = (v.codemun / 10000)
+  WHERE v.ano > 2003
+  GROUP BY v.ano, e.id, e.descricao_estado, r.poder, r.esfera, cor.raca_script_r_resultado
+  ORDER BY v.ano DESC, e.id, e.descricao_estado, r.poder, r.esfera, cor.raca_script_r_resultado
+WITH DATA;")
+
+
+DBI::dbSendQuery(con, qq2)
+
