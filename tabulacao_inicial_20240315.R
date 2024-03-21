@@ -10,7 +10,7 @@ require(dplyr)
 require(dplyr)
 
 diretorio_trabalho = "//srjn4/atlas/vinculos_estaduais/"
-setwd(diretorio_trabalho)
+#setwd(diretorio_trabalho)
 
 # tabela fonte 1: vinculos_v6_resumos.brasil_v12_esfera_x_poder
 # tabela fonte 2: vinculos_v6_resumos.brasil_v12_corxsexoxpoderxesfera
@@ -129,8 +129,20 @@ for(tab in names(tabela)){
 
 
 # exportar
-## Save workbook to working directory
+
+## Salvar arquivo em planilha no servidor
 saveWorkbook(wb, file = "planilha_dados.xlsx", overwrite = TRUE)
+
+
+## Atualizar no Google Drive
+### verificar autorização
+
+googledrive::drive_put(
+  path = googledrive::as_dribble("Burocracias subnacionais"),
+  media = "./planilha_dados.xlsx"
+)
+
+
 
 
 ##  dados em construção - 
