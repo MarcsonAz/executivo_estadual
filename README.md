@@ -5,7 +5,7 @@
 Códigos de produção de dados e relatórios com dados para municiar o projeto de burocracias subnacionais
 
 
-repositório: *executivo_estadual*
+repositório: **executivo_estadual**
 
 
 ### Dados:
