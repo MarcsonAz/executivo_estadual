@@ -1,1 +1,0 @@
-find . -name *.csv -printf "%s, %p\n" >> mapeamento.csv
