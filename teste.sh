@@ -10,4 +10,5 @@ do
 	git commit -m "Auto-Commit at : $now" &> /dev/null	
 	git push -u origin main               &> /dev/null
 done
-quit
+timeout 2 >nul
+exit

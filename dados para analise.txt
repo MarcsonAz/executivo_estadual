@@ -28,7 +28,7 @@ Foco na comparação entre os resultados de UFs, logo pegar as ocupações nas U
 
 
 
-fazer agora:
+feito
 Tabela de UF-v12 para ter as informações de remuneração
 
 uf_v12_
@@ -37,12 +37,20 @@ vinculos_v6_resumos.brasil_v12_corxsexoxpoderxesfera
 
 
 
-fazer
+feito
 
 brasil_v12_remuneracao_poderxesfera
 brasil_v12_remuneracao_decil_poderxesfera
 
+Novas analises:
 
+série -
+
+escolaridade
+
+somente 2021 -
+
+ocupacao e escolaridade
 
 
 
