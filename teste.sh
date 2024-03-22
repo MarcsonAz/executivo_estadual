@@ -9,6 +9,5 @@ do
 	now=$(date)                           &> /dev/null
 	git commit -m "Auto-Commit at : $now" &> /dev/null	
 	git push -u origin main               &> /dev/null
+	sleep 2 && exit	
 done
-timeout 2 >nul
-exit
