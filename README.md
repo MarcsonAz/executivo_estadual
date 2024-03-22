@@ -16,6 +16,6 @@ Para o Brasil: total, segundo sexo, segundo cor, remuneração média e mediana,
 
 Para as unidades da federação: segundo sexo, segundo cor, remuneração média e mediana, segundo decis de remuneração
 
-** Fazer do total por UF **
+**Fazer do total por UF**
 
 
