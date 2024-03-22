@@ -2,7 +2,7 @@
 path="\\srjn4\atlas\executivo_estadual" # Replace this with the path to your git repository
 while true
 do
-	inotifywait --recursive -qq -e attrib,create,delete,modify,delete_self,move,move_self,close_write $path
+	FindFirstChangeNotification --recursive -qq -e attrib,create,delete,modify,delete_self,move,move_self,close_write $path
 	cd $path                              &> /dev/null
 	git pull                              &> /dev/null
 	git add --all                         &> /dev/null
