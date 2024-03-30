@@ -23,7 +23,6 @@ setwd(diretorio_trabalho)
 
 # gerar tabelas e colocar numa planilha
 
-
 ################################################################################
 # conectar
 ################################################################################
@@ -35,7 +34,7 @@ con <- DBI::dbConnect(RPostgres::Postgres(),
                       user = keyring::key_get("id_ipea"),
                       password = keyring::key_get("pw_ipea_psql10-df"))
 
-DBI::dbGetInfo(con)$host == "psql10-df"
+identical(DBI::dbGetInfo(con)$host, "psql10-df")
 
 query1 <- paste(
   "SELECT ano,",
