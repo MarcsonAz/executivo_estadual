@@ -1,0 +1,72 @@
+---
+title: "Texto de Análises para projeto de Burocracias subnacionais"
+format: html
+toc: false
+self-contained: true
+theme:
+  - cosmo
+  - ../apoio/theme-report.scss
+---
+
+![](../apoio/logo_idp.png "Logo IDP"){ fig-alt="Logo IDP" fig-align="left"}
+
+Última atualização: 09/04/2024
+
+### Análise inicial dos dados
+
+#### Dados propostos para análise
+
+
+tabela fonte 1: vinculos_v6_resumos.brasil_v12_esfera_x_poder
+
+tabela fonte 2: vinculos_v6_resumos.brasil_v12_corxsexoxpoderxesfera
+
+tabela fonte 3: public.brasil_ee_sexo_85_03
+
+tabela fonte 4: public.brasil_ee_decis
+
+tabela fonte 5: vinculos_v6_resumos.uf_v11_genero_poder_esfera
+
+tabela fonte 6: vinculos_v6_resumos.brasil_v12_publico_rem_decil_ee
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+source('../codigos/dfs_para_relatorio.R')
+require(dplyr)
+require(plotly)
+
+```
+
+
+#### Total
+
+
+Total, variação 5 em 5 anos, variação (1985-1994,1995-2004,2005-2014,2015-2021)?
+
+::: panel-tabset
+
+## Total
+```{=html}
+<iframe width="780" height="500" src="../graficos/v1.html" title="Quarto Documentation"></iframe>
+```
+
+## Variação
+```{=html}
+<iframe width="780" height="500" src="../graficos/v2.html" title="Quarto Documentation"></iframe>
+```
+
+:::
+
+#### Total por sexo e cor
+
+
+
+Total e proporção por sexo
+
+Total e proporção por cor
+
+
+
+
+
+
