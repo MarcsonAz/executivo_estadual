@@ -95,7 +95,7 @@ fig <- fig %>% layout(title = "Brasil - Vínculos públicos no poder Executivo n
                                    range = limites))
 
 fig
-
+widget_file_size(fig,"v1")
 
 # range = c(-4,4))
 
@@ -136,3 +136,28 @@ fig <- fig %>% layout(title = "Brasil - Vínculos públicos no poder Executivo n
 fig
 
 widget_file_size(fig,"v2")
+
+
+library(plotly)
+
+fig <- plot_ly()
+fig <- fig %>% add_bars(
+  x = variacao$descricao_periodo,
+  y = variacao$variacao_absoluta,
+  marker = list(
+    color = 'rgb(0,100,80)'
+  ),
+  name = 'expenses'
+)
+
+fig <- fig %>% add_bars(
+  x = c("2016", "2017", "2018"),
+  y = c(300,400,700),
+  base = 0,
+  marker = list(
+    color = 'blue'
+  ),
+  name = 'revenue'
+)
+
+fig

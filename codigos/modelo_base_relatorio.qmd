@@ -3,6 +3,7 @@ title: "Texto de Análises para projeto de Burocracias subnacionais"
 format: html
 toc: false
 self-contained: true
+preload-iframes: true
 theme:
   - cosmo
   - ../apoio/theme-report.scss
@@ -16,18 +17,8 @@ theme:
 
 #### Dados propostos para análise
 
+Dados no nível Brasil e para as unidades da federação. No nível Brasil foram tabulados os totais, os cruzamentos por sexo e cor e a tabulaçã ode remunerações, com os valores de remuneração média mensal e os decis de remuneração dos vínculos públicos no poder executivo no bível estadual. Para os dados de unidades da federação Foram construídos até o momentos nos mesmos nívels de desagregação, em totais e de remuneração.
 
-tabela fonte 1: vinculos_v6_resumos.brasil_v12_esfera_x_poder
-
-tabela fonte 2: vinculos_v6_resumos.brasil_v12_corxsexoxpoderxesfera
-
-tabela fonte 3: public.brasil_ee_sexo_85_03
-
-tabela fonte 4: public.brasil_ee_decis
-
-tabela fonte 5: vinculos_v6_resumos.uf_v11_genero_poder_esfera
-
-tabela fonte 6: vinculos_v6_resumos.brasil_v12_publico_rem_decil_ee
 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -40,19 +31,157 @@ require(plotly)
 
 #### Total
 
+Será feita uma análise inicial dos quantitativos de vínculos, com a série completa e a variação em períodos selecioanados.
 
-Total, variação 5 em 5 anos, variação (1985-1994,1995-2004,2005-2014,2015-2021)?
 
-::: panel-tabset
+::: {.panel-tabset}
 
 ## Total
-```{=html}
-<iframe width="780" height="500" src="../graficos/v1.html" title="Quarto Documentation"></iframe>
+
+
+```{r, fig.width=10, fig.height=8, echo=FALSE, message=FALSE,warning=FALSE}
+data = base_completa$total_brasil %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
+  select(ano, total)
+
+
+fig <- plot_ly(data, x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
+               line = list(color = 'transparent'),
+               showlegend = FALSE, name = '') 
+fig <- fig %>% add_trace(x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
+                         line = list(color='rgb(0,100,80)'),
+                         name = 'Valor',
+                         hovertemplate = "Ano: %{x} <br>Vínculos: %{y}<extra></extra>") 
+
+limites = list(0,1.1*as.numeric(max(data$total)))
+
+m <- list(l = 40,r = 30,b = 20,t = 80,pad = 4)
+
+vals = as.character(seq(0,3.5e6,5e5))
+
+
+fig <- fig %>% layout(
+  title = list(
+    text="Brasil - Vínculos públicos no poder Executivo no nível estadual",
+    xanchor = "center", yanchor = "top"),
+  paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
+  margin = m,
+  xaxis = list(title = "",
+               gridcolor = 'rgb(255,255,255)',
+               showgrid = TRUE,
+               showline = FALSE,
+               showticklabels = TRUE,
+               tickcolor = 'rgb(127,127,127)',
+               ticks = 'outside',
+               zeroline = FALSE),
+  yaxis = list(title = list(text="Vínculos",
+                            standoff =15),
+               gridcolor = 'rgb(255,255,255)',
+               showgrid = TRUE,
+               showline = FALSE,
+               showticklabels = TRUE,
+               tickcolor = 'rgb(127,127,127)',
+               ticks = 'outside',
+               tickformat= ".2s",
+               zeroline = TRUE,
+               range = limites),
+  hoverformat = "x"
+  )
+
+fig
 ```
 
 ## Variação
-```{=html}
-<iframe width="780" height="500" src="../graficos/v2.html" title="Quarto Documentation"></iframe>
+
+```{r echo=FALSE}
+# tratmento
+data = base_completa$total_brasil %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
+  select(ano, total)
+
+variacao = data %>% filter(
+  ano %in% c(1985,1995,2005,2015,2021)
+) %>% mutate(
+  lag = lag(total),
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("","1985-1995","1995-2005","2005-2015","2015-2021"),
+  variaca_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,variacao_absoluta,variaca_relativa)
+
+variacao2 = data %>% filter(
+  ano %in% c(1985,2021)
+) %>% mutate(
+  lag = lag(total),
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("","1985-2021"),
+  variaca_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,variacao_absoluta,variaca_relativa)
+
+variacao = rbind(
+  variacao, variacao2
+) %>% mutate()
+
+```
+
+
+```{r, fig.width=10, fig.height=8, echo=FALSE, message=FALSE,warning=FALSE}
+fig <- plot_ly()
+fig <- fig %>% add_bars(
+  x = variacao$descricao_periodo,
+  y = variacao$variacao_absoluta,
+  text = paste0(variacao$variaca_relativa,"%"),
+  marker = list(
+    color = c(rep('rgb(0,100,80)',4),'rgb(0,100,255)')
+  ),
+  hovertemplate = "Período: %{x} <br>Variação de vínculos: %{y}<extra></extra>",
+  name = 'expenses'
+)
+
+limites = list(-1.1*max(variacao$variacao_absoluta),
+               1.1*max(variacao$variacao_absoluta))
+
+m <- list(l = 40,r = 30,b = 20,t = 80,pad = 4)
+
+vals = as.character(c(seq(-5e5,0,2e5),0,seq(-1e5,7e5,2e5)))
+
+fig <- fig %>% layout(
+  title = list(
+    text="Brasil - Variação em períodos do total de vínculos públicos <br>no poder Executivo no nível estadual",
+    xanchor = "center", yanchor = "top"),
+  paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
+  margin = m,
+  xaxis = list(title = "",
+               gridcolor = 'rgb(255,255,255)',
+               showgrid = TRUE,
+               showline = FALSE,
+               showticklabels = TRUE,
+               tickcolor = 'rgb(127,127,127)',
+               ticks = 'outside',
+               zeroline = FALSE,
+               categoryorder = "array",
+              categoryarray = variacao$descricao_periodo),
+  yaxis = list(title = list(text="Variação de vínculos",
+                            standoff =15),
+               gridcolor = 'rgb(255,255,255)',
+               showgrid = TRUE,
+               showline = FALSE,
+               showticklabels = TRUE,
+               tickcolor = 'rgb(127,127,127)',
+               ticks = 'outside',
+               tickformat= ".2s",
+               tickvals = vals,
+               zeroline = TRUE,
+               range = limites),
+  hoverformat = "x"
+  )
+
+fig
 ```
 
 :::
