@@ -44,7 +44,7 @@ multiplesheets <- function(fname) {
 # planilha
 ################################################################################
 
-caminho_planilha = '../dados/planilha_dados.xlsx'
+caminho_planilha = './dados/planilha_dados.xlsx'
 base_completa <- multiplesheets(caminho_planilha)
 
 

@@ -1,6 +1,110 @@
 # graficos apoio
 # 
 # 
+
+require(dplyr)
+require(ggplot2)
+require(scales)
+# Development version
+utils::remove.packages('ipeaplot')
+remotes::install_github("ipeadata-lab/ipeaplot")
+
+
+## SERIE BRASIL #########################################################################
+## 
+
+# dados
+source('./codigos/dfs_para_relatorio.R')
+
+data = base_completa$total_brasil
+
+data = data %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
+  select(ano, total)
+
+
+variacao = data %>% filter(
+  ano %in% c(1985,1995,2005,2015,2021)
+) %>% mutate(
+  lag = lag(total),
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("","1985-1995","1995-2005","2005-2015","2015-2021"),
+  variaca_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,variacao_absoluta,variaca_relativa)
+
+variacao2 = data %>% filter(
+  ano %in% c(1985,2021)
+) %>% mutate(
+  lag = lag(total),
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("","1985-2021"),
+  variaca_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,variacao_absoluta,variaca_relativa)
+
+variacao = rbind(
+  variacao, variacao2
+) %>% mutate(descricao_periodo = factor(
+  descricao_periodo, levels = descricao_periodo, labels=descricao_periodo
+))
+
+
+# GRAFICO 1 - TOTAL #######################################
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=total)) +
+  scale_color_ipea() +
+  labs(title = 'Brasil - Vínculos públicos no poder Executivo e nível estadual') +
+  ylab('Vínculos') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6),
+                     limits = c(0,4e6),
+                     breaks = seq(0,4e6,0.5e6)) +
+  theme(
+    axis.title.x = element_blank()
+  )
+
+ggsave(filename = "./graficos/brasil_total.png", device = "png",
+       width = 10, height = 5, units = "cm")
+
+
+
+# GRAFICO 2 - variacao ####################################
+
+variacao %>% 
+  ggplot(aes(x=descricao_periodo, y=variacao_absoluta,fill=descricao_periodo)) +
+  geom_col() +
+  scale_color_ipea() + 
+  scale_fill_manual(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Brasil - Variação em períodos de vínculos públicos no poder Executivo e nível estadual') +
+  ylab('Variação de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
+                     limits = c(-.75e6,.75e6),
+                     breaks = seq(-.75e6,.75e6,0.25e6)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none")
+
+ggsave(filename = "./graficos/brasil_total_variacao.png", device = "png",
+       width = 10, height = 5, units = "cm")
+
+
+
+
+
+####################################################
+####################################################
+####################################################
+## APOIO PLOTLY
+
+
+
 library(plotly)
 
 widget_file_size <- function(p,filename="grafico") {
@@ -14,57 +118,6 @@ widget_file_size <- function(p,filename="grafico") {
 }
 #widget_file_size(p)
 #widget_file_size(partial_bundle(p))
-
-
-month <- c('January', 'February', 'March', 'April', 'May', 'June', 'July',
-           'August', 'September', 'October', 'November', 'December')
-high_2014 <- c(28.8, 28.5, 37.0, 56.8, 69.7, 79.7, 78.5, 77.8, 74.1, 62.6, 45.3, 39.9)
-low_2014 <- c(12.7, 14.3, 18.6, 35.5, 49.9, 58.0, 60.0, 58.6, 51.7, 45.2, 32.2, 29.1)
-data <- data.frame(month, high_2014, low_2014)
-data$average_2014 <- rowMeans(data[,c("high_2014", "low_2014")])
-
-#The default order will be alphabetized unless specified as below:
-data$month <- factor(data$month, levels = data[["month"]])
-
-fig <- plot_ly(data, x = ~month, y = ~high_2014, type = 'scatter', mode = 'lines',
-               line = list(color = 'transparent'),
-               showlegend = FALSE, name = 'High 2014') 
-fig <- fig %>% add_trace(x = ~month, y = ~average_2014, type = 'scatter', mode = 'lines',
-                         line = list(color='rgb(0,100,80)'),
-                         name = 'Average') 
-fig <- fig %>% layout(title = "Average, High and Low Temperatures in New York",
-                      paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
-                      xaxis = list(title = "Months",
-                                   gridcolor = 'rgb(255,255,255)',
-                                   showgrid = TRUE,
-                                   showline = FALSE,
-                                   showticklabels = TRUE,
-                                   tickcolor = 'rgb(127,127,127)',
-                                   ticks = 'outside',
-                                   zeroline = FALSE),
-                      yaxis = list(title = "Temperature (degrees F)",
-                                   gridcolor = 'rgb(255,255,255)',
-                                   showgrid = TRUE,
-                                   showline = FALSE,
-                                   showticklabels = TRUE,
-                                   tickcolor = 'rgb(127,127,127)',
-                                   ticks = 'outside',
-                                   zeroline = FALSE))
-
-fig
-
-
-
-
-## do trabalho
-## 
-data = base_completa$total_brasil
-
-require(dplyr)
-data = data %>% 
-  mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
-  select(ano, total)
-
 
 fig <- plot_ly(data, x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
                line = list(color = 'transparent'),
