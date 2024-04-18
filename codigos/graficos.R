@@ -1,16 +1,20 @@
 # graficos apoio
 # 
 # 
-
-require(dplyr)
-require(ggplot2)
-require(scales)
 # Development version
 utils::remove.packages('ipeaplot')
 remotes::install_github("ipeadata-lab/ipeaplot")
 
+require(ipeaplot)
+require(dplyr)
+require(tidyr)
+require(ggplot2)
+require(scales)
+library(ggtext)
 
-## SERIE BRASIL #########################################################################
+
+
+## SERIE BRASIL ###############################################################
 ## 
 
 # dados
@@ -93,6 +97,62 @@ variacao %>%
 
 ggsave(filename = "./graficos/brasil_total_variacao.png", device = "png",
        width = 10, height = 5, units = "cm")
+
+
+
+
+## SERIE BRASIL SEXO ##########################################################
+## 
+
+data = base_completa$total_brasil_sexo
+
+data = data %>% 
+  mutate(total_mulher = as.numeric(vinculos_executivo_estadual_feminino),
+         total_homem = as.numeric(vinculos_executivo_estadual_masculino)) %>% 
+  select(ano, total_mulher,total_homem) %>% 
+  pivot_longer(!ano,
+    names_to = 'sexo',
+    values_to = 'total'
+  )
+
+# g3
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=total, color=sexo)) +
+  
+  #scale_color_ipea() + 
+  scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Brasil - Vínculos públicos no poder Executivo e nível estadual por sexo') +
+       #subtitle = "Milhões de vínculos de <span style = 'color:#E69F00'>Mulher</span> e <span style = 'color:#E69FFF'>Homem</span>") +
+  ylab('Vínculos (milhões de unidades)') +
+  #theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6),
+                     limits = c(0,2.1e6),
+                     breaks = seq(0,2e6,0.5e6)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "top",
+    legend.title = "none") 
+  
+  # 
+  # annotate(
+  #   'richtext',
+  #   x = 2021,
+  #   y = 1.9e6,
+  #   label = "ACCURATE | NULL | <span style = 'color:#E69F00'>ERROR</span>",
+  #   hjust = 1,
+  #   vjust = 0, 
+  #   #col = unhighlighed_col_darker, 
+  #   size = 4,
+  #   label.colour = NA,
+  #   fill = NA
+  # )
+
+ggsave(filename = "./graficos/brasil_total_variacao.png", device = "png",
+       width = 10, height = 5, units = "cm")
+
+
+
 
 
 
