@@ -2,22 +2,20 @@
 # 
 # 
 # Development version
-utils::remove.packages('ipeaplot')
-remotes::install_github("ipeadata-lab/ipeaplot")
+#utils::remove.packages('ipeaplot')
+#remotes::install_github("ipeadata-lab/ipeaplot")
+#install.packages('pacman')
 
-require(ipeaplot)
-require(dplyr)
-require(tidyr)
-require(ggplot2)
-require(scales)
-library(ggtext)
-
+pacman::p_load(
+  c('dplyr','tidyr','ggplot2','ipeaplot','scales','ggtext'),
+  character.only = TRUE)
 
 
 ## SERIE BRASIL ###############################################################
 ## 
 
 # dados
+{ 
 source('./codigos/dfs_para_relatorio.R')
 
 data = base_completa$total_brasil
@@ -45,7 +43,7 @@ variacao2 = data %>% filter(
   lag = lag(total),
   variacao_absoluta = total - lag,
   descricao_periodo = c("","1985-2021"),
-  variaca_relativa = round(((total/lag)-1)*100,1)
+  variacao_relativa = round(((total/lag)-1)*100,1)
 ) %>% 
   na.omit() %>% 
   select(
@@ -57,24 +55,35 @@ variacao = rbind(
   descricao_periodo, levels = descricao_periodo, labels=descricao_periodo
 ))
 
+texto_caption = paste0(
+    'Fonte: Rais. Nota: a variação relativa para para os respectivos períodos são: ',
+    round(variacao$variaca_relativa[1]),"%, ",
+    round(variacao$variaca_relativa[2]),"%, ",
+    round(variacao$variaca_relativa[3]),"%, ",
+    round(variacao$variaca_relativa[4]),"% e ",
+    round(variacao$variaca_relativa[5]),"%.")
 
+}
 # GRAFICO 1 - TOTAL #######################################
 
 ggplot() +
   geom_line(data = data, aes(x=ano, y=total)) +
   scale_color_ipea() +
-  labs(title = 'Brasil - Vínculos públicos no poder Executivo e nível estadual') +
-  ylab('Vínculos') +
+  labs(title = 'Brasil - Vínculos',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (milhões de unidades)') +
   theme_ipea() +
   scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6),
                      limits = c(0,4e6),
                      breaks = seq(0,4e6,0.5e6)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
   theme(
     axis.title.x = element_blank()
-  )
+  ) 
 
 ggsave(filename = "./graficos/brasil_total.png", device = "png",
-       width = 10, height = 5, units = "cm")
+       width = 10, height = 6, units = "cm")
 
 
 
@@ -85,7 +94,9 @@ variacao %>%
   geom_col() +
   scale_color_ipea() + 
   scale_fill_manual(values = c(rep('#006450',4),'#0064ff')) +
-  labs(title = 'Brasil - Variação em períodos de vínculos públicos no poder Executivo e nível estadual') +
+  labs(title = 'Brasil - Vínculos',
+       subtitle = 'Variação em períodos de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = texto_caption) +
   ylab('Variação de vínculos') +
   theme_ipea() +
   scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
@@ -96,9 +107,7 @@ variacao %>%
     legend.position = "none")
 
 ggsave(filename = "./graficos/brasil_total_variacao.png", device = "png",
-       width = 10, height = 5, units = "cm")
-
-
+       width = 10, height = 6, units = "cm")
 
 
 ## SERIE BRASIL SEXO ##########################################################
@@ -113,47 +122,115 @@ data = data %>%
   pivot_longer(!ano,
     names_to = 'sexo',
     values_to = 'total'
-  )
+  ) %>% 
+  mutate(sexo = factor(sexo,
+                       levels = c('total_mulher','total_homem'),
+                       labels = c('Mulher','Homem')))
 
-# g3
+
+variacao3 = data %>% 
+  filter(ano %in% c(1985,2021)) %>% 
+  arrange(sexo) %>% 
+  mutate(lag = lag(total)) %>% 
+  filter(ano == 2021) %>% 
+  mutate(
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("1985-2021","1985-2021"),
+  variacao_relativa = round(((total/lag)-1)*100,1)) %>% 
+  #na.omit() %>% 
+  select(
+    descricao_periodo,sexo,variacao_absoluta,variacao_relativa)
+
+texto = list(mulher = round(variacao3$variacao_relativa[variacao3$sexo=="Mulher"]),
+             homem = round(variacao3$variacao_relativa[variacao3$sexo=="Homem"]))
+
+
+# GRAFICO 3 - TOTAL #######################################
 
 ggplot() +
   geom_line(data = data, aes(x=ano, y=total, color=sexo)) +
   
-  #scale_color_ipea() + 
+  scale_color_ipea() + 
   scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
-  labs(title = 'Brasil - Vínculos públicos no poder Executivo e nível estadual por sexo') +
-       #subtitle = "Milhões de vínculos de <span style = 'color:#E69F00'>Mulher</span> e <span style = 'color:#E69FFF'>Homem</span>") +
+  labs(title = 'Brasil - Vínculos - Sexo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e sexo (1985-2021)',
+       caption = 'Fonte: Rais') +
   ylab('Vínculos (milhões de unidades)') +
-  #theme_ipea() +
-  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6),
-                     limits = c(0,2.1e6),
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6),
+                     limits = c(0,2.2e6),
                      breaks = seq(0,2e6,0.5e6)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
   theme(
     axis.title.x = element_blank(),
-    legend.position = "top",
-    legend.title = "none") 
+    #legend.position = "top",
+    legend.title = element_blank())
   
-  # 
-  # annotate(
-  #   'richtext',
-  #   x = 2021,
-  #   y = 1.9e6,
-  #   label = "ACCURATE | NULL | <span style = 'color:#E69F00'>ERROR</span>",
-  #   hjust = 1,
-  #   vjust = 0, 
-  #   #col = unhighlighed_col_darker, 
-  #   size = 4,
-  #   label.colour = NA,
-  #   fill = NA
-  # )
+ggsave(filename = "./graficos/brasil_total_sexo.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
-ggsave(filename = "./graficos/brasil_total_variacao.png", device = "png",
-       width = 10, height = 5, units = "cm")
+# GRAFICO 4 - variacao ####################################
+
+variacao3 %>% 
+  ggplot(aes(x=sexo, y=variacao_absoluta,fill=sexo)) +
+  geom_col() +
+  scale_color_ipea() + 
+  #scale_fill_manual(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Brasil - Vínculos - Sexo',
+       subtitle = 'Variação de vínculos públicos de homens e mulheres no poder Executivo e nível estadual entre 1985 e 2021',
+       caption = paste0(
+'Fonte: Rais. Nota: a variação relativa para Mulher é de ',texto$mulher,
+'% e de Homem é ',texto$homem,'%')) +
+  ylab('Variação de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
+                     limits = c(0,.5e6),
+                     breaks = seq(0,5e6,0.1e6)) +
+  theme(
+    axis.title.x = element_blank(), 
+    legend.position = 'none'
+    )
+
+ggsave(filename = "./graficos/brasil_variacao_sexo.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
 
 
+## SERIE BRASIL COR ##########################################################
+## 
+
+data = base_completa$total_brasil_cor
+
+data = data %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual),
+         cor_descricao = as.factor(cor_descricao)) %>% 
+  select(ano, cor, cor_descricao, total)
+
+
+# GRAFICO 5 - TOTAL COR ###################################
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=total, color=cor_descricao), linewidth = 1) +
+  
+  scale_color_ipea() + 
+  scale_color_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
+  labs(title = 'Brasil - Vínculos - Cor',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e cor (2004-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (milhões de unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6),
+                     limits = c(0,2.5e6),
+                     breaks = seq(0,2.5e6,0.5e6)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-3))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/brasil_total_cor.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
 
