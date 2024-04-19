@@ -603,7 +603,7 @@ data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>%
   ))
 
 
-# GRAFICO 12 - TOTAL #######################################
+# GRAFICO 12 - TOTAL cor #######################################
 
 ggplot() +
   geom_line(data = data, aes(x=ano, y=total,group=cor_descricao,color=cor_descricao)) +
@@ -628,5 +628,72 @@ ggplot() +
 ggsave(filename = "./graficos/uf_total_cor.png", device = "png",
        width = 15, height = 15, units = "cm")
 
+# GRAFICO 12.1 - TOTAL cor sem SP #######################################
 
+ggplot() +
+  geom_line(data = data %>% filter(codigo_uf!='SP'), 
+            aes(x=ano, y=total,group=cor_descricao,color=cor_descricao)) +
+  scale_color_viridis_d(direction = -1) +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Cor - Sem São Paulo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e cor (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  #scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                   limits = c(0,8.3e5),
+  #                  breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank()
+  ) 
+
+ggsave(filename = "./graficos/uf_total_cor_sem_SP.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
+# GRAFICO 13 - razao cor (branco/(pretos e pardos)) #######################################
+# com o data pré gráfico 12 
+
+data13 = data %>% 
+  pivot_wider(
+    names_from = 'cor_descricao',
+    values_from = 'total') %>%
+  mutate_at(c("Indígena","Branca","Preta","Amarela","Parda") , ~ ifelse(is.na(.),0,.)) %>% 
+  mutate(
+    razao_b_pp = round(Branca/(Preta+Parda),1)
+  ) %>% 
+  select(ano,codigo_uf,razao_b_pp)
+  
+
+ggplot() +
+  geom_line(data = data13,
+            aes(x=ano, y=razao_b_pp)) +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Razão de vínculos no poder Executivo e nível estadual - Cor (2004-2021)',
+       subtitle = 'Número de vínculos de pessoas na cor Branca para cada um vínculo de pessoas na cor Preta ou Parda',
+       caption = 'Fonte: Rais') +
+  ylab('Razão de vínculos') +
+  theme_ipea() +
+  #scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                   limits = c(0,8.3e5),
+  #                  breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    axis.title.y = element_text(size = 30),
+    axis.text.x  = element_text(size = 40),
+    axis.text.y = element_text(size = 40),
+    strip.text = element_text(size = 40))
+
+ggsave(filename = "./graficos/uf_total_cor_razao.png", device = "png",
+       width = 16, height = 10, units = "in")
 
