@@ -1,0 +1,118 @@
+
+
+####################################################
+####################################################
+####################################################
+## APOIO PLOTLY
+
+
+
+library(plotly)
+
+widget_file_size <- function(p,filename="grafico") {
+  d <- tempdir()
+  withr::with_dir(d, htmlwidgets::saveWidget(p, paste0(filename,".html")))
+  f <- file.path(d, paste0(filename,".html"))
+  mb <- round(file.info(f)$size / 1e6, 3)
+  message("File is: ", mb," MB")
+  cat(f)
+  fs::file_move(f,paste0(getwd(),"/",filename,".html"))
+}
+#widget_file_size(p)
+#widget_file_size(partial_bundle(p))
+
+fig <- plot_ly(data, x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
+               line = list(color = 'transparent'),
+               showlegend = FALSE, name = '') 
+fig <- fig %>% add_trace(x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
+                         line = list(color='rgb(0,100,80)'),
+                         name = 'Valor') 
+
+limites = list(0,1.1*as.numeric(max(data$total)))
+fig <- fig %>% layout(title = "Brasil - Vínculos públicos no poder Executivo no nível estadual",
+                      paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
+                      xaxis = list(title = "",
+                                   gridcolor = 'rgb(255,255,255)',
+                                   showgrid = TRUE,
+                                   showline = FALSE,
+                                   showticklabels = TRUE,
+                                   tickcolor = 'rgb(127,127,127)',
+                                   ticks = 'outside',
+                                   zeroline = FALSE),
+                      yaxis = list(title = "Vínculos",
+                                   gridcolor = 'rgb(255,255,255)',
+                                   showgrid = TRUE,
+                                   showline = FALSE,
+                                   showticklabels = TRUE,
+                                   tickcolor = 'rgb(127,127,127)',
+                                   ticks = 'outside',
+                                   zeroline = TRUE,
+                                   range = limites))
+
+fig
+widget_file_size(fig,"v1")
+
+# range = c(-4,4))
+
+
+data = base_completa$total_brasil %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
+  select(ano, total)
+
+
+fig <- plot_ly(data, x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
+               line = list(color = 'transparent'),
+               showlegend = FALSE, name = '') 
+fig <- fig %>% add_trace(x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
+                         line = list(color='rgb(0,100,80)'),
+                         name = 'Valor') 
+
+limites = list(0,1.1*as.numeric(max(data$total)))
+fig <- fig %>% layout(title = "Brasil - Vínculos públicos no poder Executivo no nível estadual",
+                      paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
+                      xaxis = list(title = "",
+                                   gridcolor = 'rgb(255,255,255)',
+                                   showgrid = TRUE,
+                                   showline = FALSE,
+                                   showticklabels = TRUE,
+                                   tickcolor = 'rgb(127,127,127)',
+                                   ticks = 'outside',
+                                   zeroline = FALSE),
+                      yaxis = list(title = "Vínculos",
+                                   gridcolor = 'rgb(255,255,255)',
+                                   showgrid = TRUE,
+                                   showline = FALSE,
+                                   showticklabels = TRUE,
+                                   tickcolor = 'rgb(127,127,127)',
+                                   ticks = 'outside',
+                                   zeroline = TRUE,
+                                   range = limites))
+
+fig
+
+widget_file_size(fig,"v2")
+
+
+library(plotly)
+
+fig <- plot_ly()
+fig <- fig %>% add_bars(
+  x = variacao$descricao_periodo,
+  y = variacao$variacao_absoluta,
+  marker = list(
+    color = 'rgb(0,100,80)'
+  ),
+  name = 'expenses'
+)
+
+fig <- fig %>% add_bars(
+  x = c("2016", "2017", "2018"),
+  y = c(300,400,700),
+  base = 0,
+  marker = list(
+    color = 'blue'
+  ),
+  name = 'revenue'
+)
+
+fig

@@ -7,7 +7,7 @@
 #install.packages('pacman')
 
 pacman::p_load(
-  c('dplyr','tidyr','ggplot2','ipeaplot','scales','ggtext'),
+  c('dplyr','tidyr','ggplot2','ipeaplot','scales','ggtext','viridis'),
   character.only = TRUE)
 
 
@@ -211,7 +211,7 @@ data = data %>%
 # GRAFICO 5 - TOTAL COR ###################################
 
 ggplot() +
-  geom_line(data = data, aes(x=ano, y=total, color=cor_descricao), linewidth = 1) +
+  geom_line(data = data, aes(x=ano, y=total, color=cor_descricao)) +
   
   scale_color_ipea() + 
   scale_color_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
@@ -233,121 +233,339 @@ ggsave(filename = "./graficos/brasil_total_cor.png", device = "png",
        width = 10, height = 6, units = "cm")
 
 
+#################################
+#################################
+# remuneracao brasil
+
+# dados
+data = base_completa$rem_media_brasil
+
+data = data %>% 
+  select(ano, 
+         media = remuneracao_media_executivo_estadual,
+         mediana = remuneracao_mediana_executivo_estadual) %>% 
+  pivot_longer(!ano,
+               names_to = 'categoria',
+               values_to = 'remuneracao'
+  ) %>% 
+  mutate(categoria = factor(categoria,
+                       levels = c("media", "mediana"),
+                       labels = c('Média','Mediana')))
 
 
-####################################################
-####################################################
-####################################################
-## APOIO PLOTLY
+
+# GRAFICO 6 - remuneracao media brasil ####################################
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=remuneracao, color=categoria)) +
+  
+  scale_color_ipea() + 
+  scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Brasil - Remuneração',
+       subtitle = 'Remuneração média e mediana de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+                     limits = c(0,6200),
+                     breaks = seq(0,6000,1000)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/brasil_remuneracao_media_mediana.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
 
-library(plotly)
 
-widget_file_size <- function(p,filename="grafico") {
-  d <- tempdir()
-  withr::with_dir(d, htmlwidgets::saveWidget(p, paste0(filename,".html")))
-  f <- file.path(d, paste0(filename,".html"))
-  mb <- round(file.info(f)$size / 1e6, 3)
-  message("File is: ", mb," MB")
-  cat(f)
-  fs::file_move(f,paste0(getwd(),"/",filename,".html"))
-}
-#widget_file_size(p)
-#widget_file_size(partial_bundle(p))
+# dados - decil
+data = base_completa$rem_decil_brasil
 
-fig <- plot_ly(data, x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
-               line = list(color = 'transparent'),
-               showlegend = FALSE, name = '') 
-fig <- fig %>% add_trace(x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
-                         line = list(color='rgb(0,100,80)'),
-                         name = 'Valor') 
+# para grafico 9
+data2 = data %>% 
+  select(!...1) %>% 
+  pivot_longer(!ano,
+               names_to = 'categoria',
+               values_to = 'remuneracao'
+  ) %>% 
+  filter(
+    categoria == 'remuneracao_razao_decil_9_1_executivo_estadual')
 
-limites = list(0,1.1*as.numeric(max(data$total)))
-fig <- fig %>% layout(title = "Brasil - Vínculos públicos no poder Executivo no nível estadual",
-                      paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
-                      xaxis = list(title = "",
-                                   gridcolor = 'rgb(255,255,255)',
-                                   showgrid = TRUE,
-                                   showline = FALSE,
-                                   showticklabels = TRUE,
-                                   tickcolor = 'rgb(127,127,127)',
-                                   ticks = 'outside',
-                                   zeroline = FALSE),
-                      yaxis = list(title = "Vínculos",
-                                   gridcolor = 'rgb(255,255,255)',
-                                   showgrid = TRUE,
-                                   showline = FALSE,
-                                   showticklabels = TRUE,
-                                   tickcolor = 'rgb(127,127,127)',
-                                   ticks = 'outside',
-                                   zeroline = TRUE,
-                                   range = limites))
-
-fig
-widget_file_size(fig,"v1")
-
-# range = c(-4,4))
+# para graficos 7,7.1,8  
+data = data %>% 
+  select(!...1) %>% 
+  pivot_longer(!ano,
+               names_to = 'categoria',
+               values_to = 'remuneracao'
+  ) %>% 
+  filter(
+    categoria != 'remuneracao_razao_decil_9_1_executivo_estadual') %>% 
+  mutate(categoria = factor(categoria,
+                            levels= c(
+                              'remuneracao_decil_1_executivo_estadual',
+                              'remuneracao_decil_2_executivo_estadual',
+                              'remuneracao_decil_3_executivo_estadual',
+                              'remuneracao_decil_4_executivo_estadual',
+                              'remuneracao_decil_5_executivo_estadual',
+                              'remuneracao_decil_6_executivo_estadual',
+                              'remuneracao_decil_7_executivo_estadual',
+                              'remuneracao_decil_8_executivo_estadual',
+                              'remuneracao_decil_9_executivo_estadual'
+                            ),
+                            labels = c(
+                              'Decil 1','Decil 2','Decil 3',
+                              'Decil 4','Decil 5','Decil 6',
+                              'Decil 7','Decil 8','Decil 9'
+                            ))) 
+  
 
 
-data = base_completa$total_brasil %>% 
-  mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
-  select(ano, total)
+
+# GRAFICO 7 - remuneracao decil brasil ####################################
+
+ggplot(data, aes(ano, categoria, fill= remuneracao)) + 
+  geom_tile() +
+  scale_fill_viridis(discrete=FALSE, option = "H",begin = 0.15,end = 0.75) +
+  theme_classic() +
+  labs(title = 'Brasil - Decil de remuneração',
+       subtitle = 'Remuneração de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores corrigidos para setembro de 2023',
+       fill = "Reais") +
+  
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank()) 
 
 
-fig <- plot_ly(data, x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
-               line = list(color = 'transparent'),
-               showlegend = FALSE, name = '') 
-fig <- fig %>% add_trace(x = ~ano, y = ~total, type = 'scatter', mode = 'lines',
-                         line = list(color='rgb(0,100,80)'),
-                         name = 'Valor') 
-
-limites = list(0,1.1*as.numeric(max(data$total)))
-fig <- fig %>% layout(title = "Brasil - Vínculos públicos no poder Executivo no nível estadual",
-                      paper_bgcolor='rgb(255,255,255)', plot_bgcolor='rgb(229,229,229)',
-                      xaxis = list(title = "",
-                                   gridcolor = 'rgb(255,255,255)',
-                                   showgrid = TRUE,
-                                   showline = FALSE,
-                                   showticklabels = TRUE,
-                                   tickcolor = 'rgb(127,127,127)',
-                                   ticks = 'outside',
-                                   zeroline = FALSE),
-                      yaxis = list(title = "Vínculos",
-                                   gridcolor = 'rgb(255,255,255)',
-                                   showgrid = TRUE,
-                                   showline = FALSE,
-                                   showticklabels = TRUE,
-                                   tickcolor = 'rgb(127,127,127)',
-                                   ticks = 'outside',
-                                   zeroline = TRUE,
-                                   range = limites))
-
-fig
-
-widget_file_size(fig,"v2")
+ggsave(filename = "./graficos/brasil_remuneracao_decis.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
-library(plotly)
+# GRAFICO 7.1 - remuneracao decil brasil ####################################
 
-fig <- plot_ly()
-fig <- fig %>% add_bars(
-  x = variacao$descricao_periodo,
-  y = variacao$variacao_absoluta,
-  marker = list(
-    color = 'rgb(0,100,80)'
-  ),
-  name = 'expenses'
-)
+ggplot(data, aes(ano, categoria, fill= remuneracao)) + 
+  geom_tile() +
+  scale_fill_viridis(discrete=FALSE, option = "H",begin = 0.15,end = 0.75) +
+  theme_classic() +
+  labs(title = 'Brasil - Decil de remuneração',
+       subtitle = 'Remuneração de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores corrigidos para setembro de 2023',
+       fill = "Reais") +
+  
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank()) +
+  geom_text(x=1990, y='Decil 1', label="1990 - Decil 1 - R$ 904") +
+  geom_text(x=1990, y='Decil 9', label="1990 - Decil 9 - R$ 6719") +
+  geom_text(x=2018, y='Decil 1', label="2018 - Decil 1 - R$ 1623") +
+  geom_text(x=2018, y='Decil 9', label="2018 - Decil 9 - R$ 11554") 
 
-fig <- fig %>% add_bars(
-  x = c("2016", "2017", "2018"),
-  y = c(300,400,700),
-  base = 0,
-  marker = list(
-    color = 'blue'
-  ),
-  name = 'revenue'
-)
 
-fig
+ggsave(filename = "./graficos/brasil_remuneracao_decis_anotacao.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+# GRAFICO 8 - remuneracao decil brasil linhas #################################
+
+ggplot(data, aes(ano,remuneracao , color= categoria)) + 
+  geom_line() +
+  scale_color_viridis(discrete=TRUE, option = "D",end = 0.8, direction = -1,
+                      guide = guide_legend(reverse = TRUE)) +
+  theme_classic() +
+  labs(title = 'Brasil - Decil de remuneração',
+       subtitle = 'Remuneração de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores corrigidos para setembro de 2023',
+       fill = "Reais") +
+  scale_y_continuous(limits = c(0,12e3), breaks = seq(0,12e3,2e3)) + 
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank()) 
+
+
+ggsave(filename = "./graficos/brasil_remuneracao_decis_linha.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+# GRAFICO 9 - remuneracao decil brasil linha de razao #################################
+
+ggplot(data2, aes(ano, remuneracao)) + 
+  geom_line() +
+  theme_ipea() +
+  labs(title = 'Brasil - Razão entre o nono e primeiro decil de remuneração',
+       subtitle = 'Remuneração de vínculos públicos no poder Executivo e nível estadual (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores corrigidos para setembro de 2023',
+       fill = "Reais") +
+  scale_y_continuous(limits = c(0,10), breaks = seq(0,10,1)) + 
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank()) 
+
+
+ggsave(filename = "./graficos/brasil_remuneracao_decis_razao_9_1.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+######################################
+######################################
+######################################
+######################################
+### DADOS  UF
+### 
+
+
+data = base_completa$total_uf_sexo
+
+siglas = tibble::tibble(
+  codigo = data$codigo_uf,
+  sigla = data$sigla_uf
+  ) %>% 
+  distinct() %>% 
+  na.omit() %>% 
+  arrange(codigo)
+
+data = data %>% 
+  mutate(total_mulher = as.numeric(vinculos_executivo_estadual_feminino),
+         total_homem = as.numeric(vinculos_executivo_estadual_masculino),
+         total = total_mulher + total_homem,
+         codigo_uf = factor(codigo_uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla)) %>% 
+  select(!...1) %>% 
+  na.omit()
+
+data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>% 
+  pivot_longer(-c('ano','codigo_uf'),
+               names_to = 'sexo',
+               values_to = 'total') %>% 
+  mutate(sexo = factor(sexo,
+                       levels = c('total_mulher','total_homem'),
+                       labels = c('Mulher','Homem')
+                       ))
+
+
+# GRAFICO 10 - TOTAL #######################################
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=total)) +
+  scale_color_ipea() +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades)',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+                     limits = c(0,8.3e5),
+                     breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+  ) 
+
+ggsave(filename = "./graficos/uf_total.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
+# GRAFICO 10.1 - TOTAL sem sp ###################################
+
+ggplot() +
+  geom_line(data = data %>% filter(sigla_uf!="SP"), 
+            aes(x=ano, y=total)) +
+  scale_color_ipea() +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Sem São Paulo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+                     limits = c(0,3.8e5),
+                     breaks = seq(0,4e5,1e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    title = element_text(size = 20)
+  ) 
+
+ggsave(filename = "./graficos/uf_total_sem_sp.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
+# GRAFICO 11 - TOTAL SEXO ##################################
+
+ggplot() +
+  geom_line(data=data2, aes(x=ano, y=total, color=sexo)) +
+  scale_color_ipea() +
+  facet_wrap(~codigo_uf) +
+  
+  scale_color_ipea() +
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Sexo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e sexo (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+                     limits = c(0,5e5),
+                     breaks = seq(0,5e5,1e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "inside",# = c(0.5,0.1),
+    legend.justification = c(0.8,0.05),
+    #legend.box.just = "bottom",
+    #legend.margin = margin(6, 6, 6, 6)
+  ) 
+
+ggsave(filename = "./graficos/uf_total_sexo.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
+# GRAFICO 11.1 - TOTAL SEXO SEM SAO PAULO##########################
+
+ggplot() +
+  geom_line(data=data2 %>% filter(codigo_uf!="SP"),
+            aes(x=ano, y=total, color=sexo)) +
+  scale_color_ipea() +
+  facet_wrap(~codigo_uf) +
+  
+  scale_color_ipea() +
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Sexo - Sem São Paulo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e sexo (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+                     limits = c(0,2.5e5),
+                     breaks = seq(0,2.5e5,1e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "inside",# = c(0.5,0.1),
+    legend.justification = c(0.8,0.05),
+    #legend.box.just = "bottom",
+    #legend.margin = margin(6, 6, 6, 6)
+  ) 
+
+ggsave(filename = "./graficos/uf_total_sexo_sem_sp.png", device = "png",
+       width = 15, height = 15, units = "cm")
