@@ -569,3 +569,64 @@ ggplot() +
 
 ggsave(filename = "./graficos/uf_total_sexo_sem_sp.png", device = "png",
        width = 15, height = 15, units = "cm")
+
+##################################################
+########## # DADOS DE COR OU RAÇA
+
+
+data = base_completa$total_uf_cor
+
+siglas = tibble::tibble(
+  codigo = data$codigo_uf,
+  sigla = data$sigla_uf
+) %>% 
+  distinct() %>% 
+  na.omit() %>% 
+  arrange(codigo)
+
+data = data %>% 
+  mutate(codigo_uf = factor(codigo_uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla),
+         cor_descricao = factor(cor_descricao),
+         total= as.numeric(vinculos_executivo_estadual)) %>% 
+  select(ano,codigo_uf,cor_descricao,total) %>% 
+  na.omit()
+
+data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>% 
+  pivot_longer(-c('ano','codigo_uf'),
+               names_to = 'sexo',
+               values_to = 'total') %>% 
+  mutate(sexo = factor(sexo,
+                       levels = c('total_mulher','total_homem'),
+                       labels = c('Mulher','Homem')
+  ))
+
+
+# GRAFICO 12 - TOTAL #######################################
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=total,group=cor_descricao,color=cor_descricao)) +
+  scale_color_viridis_d(direction = -1) +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Cor',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e cor (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  #scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                   limits = c(0,8.3e5),
+   #                  breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank()
+  ) 
+
+ggsave(filename = "./graficos/uf_total_cor.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
+
