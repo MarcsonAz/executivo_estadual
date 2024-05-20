@@ -7,6 +7,11 @@ Códigos de produção de dados e relatórios com dados para municiar o projeto 
 
 repositório: **executivo_estadual**
 
+no servidor Ipea: \\srjn4\atlas\executivo_estadual
+
+em casa: 
+
+
 
 ### Dados:
 
