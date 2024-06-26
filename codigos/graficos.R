@@ -1,5 +1,11 @@
-# graficos apoio
-# 
+# graficos brasil
+
+###############################################
+# OBJETIVO                                    #
+# COLETA DE DADOS E EXPORTACAO EM PLANILHA    #
+#                                             #
+###############################################
+
 # 
 # Development version
 #utils::remove.packages('ipeaplot')
