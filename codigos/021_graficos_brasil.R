@@ -478,6 +478,68 @@ ggsave(filename = "./graficos/brasil_remuneracao_media_quintos_linha.png", devic
        width = 10, height = 6, units = "cm")
 
 
+
+
+# GRAFICO 15 - remuneracao media brasil sexo ####################################
+
+# eixo Y
+data = base_completa$rem_media_brasil_sexo
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=razao_rem_media)) +
+  
+  scale_color_ipea() + 
+  scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Brasil - Razão de remuneração média entre homens e mulheres',
+       subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre homens e mulheres') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+    limits = c(1,1.4),
+    breaks = seq(1,1.4,.1)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/brasil_remuneracao_media_razao_sexo.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+
+# GRAFICO 16 - remuneracao media brasil cor ####################################
+
+# eixo Y
+data = base_completa$rem_media_brasil_cor
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=razao_rem_media)) +
+  
+  scale_color_ipea() + 
+  scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Brasil - Razão de remuneração média entre brancos e não brancos',
+       subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (2004-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre brancos e não brancos') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+    limits = c(1,1.4),
+    breaks = seq(1,1.4,.1)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-3))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/brasil_remuneracao_media_razao_cor.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+
+
+
 ######################################
 ######################################
 ######################################
@@ -755,4 +817,197 @@ ggplot() +
 
 ggsave(filename = "./graficos/uf_total_cor_razao.png", device = "png",
        width = 16, height = 10, units = "in")
+
+
+# GRAFICO 16 - remuneracao media UF sexo ####################################
+
+## ajuste
+apoio =  base_completa$total_uf_sexo %>% 
+  select(codigo_uf,sigla_uf) %>%
+  distinct() %>% 
+  na.omit()
+
+data = base_completa$rem_media_brasil_sexo_uf
+
+data = left_join(data,apoio, by = join_by(uf == codigo_uf)) %>% 
+  na.omit() %>% 
+  mutate(codigo_uf = factor(uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla))
+
+ggplot() +
+  geom_line(data = data,
+            aes(x=ano, y=razao_rem_media)) +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Razão de remuneração média entre homens e mulheres',
+       subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre homens e mulheres') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  #scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                   limits = c(0,8.3e5),
+  #                  breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    axis.title.y = element_text(size = 30),
+    axis.text.x  = element_text(size = 40),
+    axis.text.y = element_text(size = 40),
+    strip.text = element_text(size = 40),
+    plot.caption = element_text(size = 30))
+
+ggsave(filename = "./graficos/uf_razao_rem_media_sexo.png", device = "png",
+       width = 16, height = 10, units = "in")
+
+
+
+
+# GRAFICO 17 - remuneracao media UF cor ####################################
+
+## ajuste
+apoio =  base_completa$total_uf_sexo %>% 
+  select(codigo_uf,sigla_uf) %>%
+  distinct() %>% 
+  na.omit()
+
+data = base_completa$rem_media_brasil_cor_uf
+
+data = left_join(data,apoio, by = join_by(uf == codigo_uf)) %>% 
+  na.omit() %>% 
+  mutate(codigo_uf = factor(uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla))
+
+ggplot() +
+  geom_line(data = data,
+            aes(x=ano, y=razao_rem_media)) +
+  facet_wrap(~codigo_uf) +
+  
+  
+  labs(title = 'Unidades da Federação - Razão de remuneração média entre brancos e não brancos',
+       subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (2004-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre brancos e não brancos.') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  #scale_y_continuous(limits = c(0.49,1.75)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    axis.title.y = element_text(size = 30),
+    axis.text.x  = element_text(size = 40),
+    axis.text.y = element_text(size = 40),
+    strip.text = element_text(size = 40),
+    plot.caption = element_text(size = 30))
+
+ggsave(filename = "./graficos/uf_razao_rem_media_cor.png", device = "png",
+       width = 16, height = 10, units = "in")
+
+  
+################
+################
+################
+################
+################
+################
+
+# detalhe DF
+
+
+
+# GRAFICO 18 - remuneracao media DF sexo ####################################
+
+## ajuste
+apoio =  base_completa$total_uf_sexo %>% 
+  select(codigo_uf,sigla_uf) %>%
+  distinct() %>% 
+  na.omit()
+
+data = base_completa$rem_media_brasil_sexo_uf
+
+data = left_join(data,apoio, by = join_by(uf == codigo_uf)) %>% 
+  na.omit() %>% 
+  mutate(codigo_uf = factor(uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla)) %>% 
+  
+  filter(uf==53)
+
+ggplot() +
+  geom_line(data = data,
+            aes(x=ano, y=razao_rem_media)) +
+  ### facet_wrap(~codigo_uf) +
+  
+  
+  scale_color_ipea() + 
+  scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Distrito Federal - Razão de remuneração média entre homens e mulheres',
+       subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre homens e mulheres') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+    limits = c(0.75,1.25),
+    breaks = seq(0.8,1.2,.1)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/DF_remuneracao_media_razao_sexo.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+# GRAFICO 19 - remuneracao media DF cor ####################################
+
+## ajuste
+apoio =  base_completa$total_uf_cor %>% 
+  select(codigo_uf,sigla_uf) %>%
+  distinct() %>% 
+  na.omit()
+
+data = base_completa$rem_media_brasil_cor_uf
+
+data = left_join(data,apoio, by = join_by(uf == codigo_uf)) %>% 
+  na.omit() %>% 
+  mutate(codigo_uf = factor(uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla)) %>% 
+  
+  filter(uf==53)
+
+ggplot() +
+  geom_line(data = data,
+            aes(x=ano, y=razao_rem_media)) +
+  ### facet_wrap(~codigo_uf) +
+  
+  
+  scale_color_ipea() + 
+  scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Distrito Federal - Razão de remuneração média entre brancos e não brancos',
+       subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre brancos e não brancos.') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+    limits = c(1,1.3),
+    breaks = seq(1,1.3,.1)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-3))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/DF_remuneracao_media_razao_cor.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
 

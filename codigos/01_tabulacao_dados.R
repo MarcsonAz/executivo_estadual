@@ -28,7 +28,11 @@ setwd(diretorio_trabalho)
 
 # tabela fonte 7: adeb_resultados.adeb_499_publico_media_quintos_ee_todos
 
-# fazendo 8 : adeb_resultados.adeb_499_publico_media_decimos_ee
+# tabela fonte 8 : adeb_resultados.adeb_499_publico_media_decimos_ee
+
+# tabela fonte 9 : vinculos_v6_resumos.uf_v12_publico_ee_sexo_remuneracao_razao
+
+# tabela fonte 10 : vinculos_v6_resumos.uf_v12_publico_raca_remuneracao
 
 
 ################################################################################
@@ -95,6 +99,21 @@ query7 <- paste(
   "FROM adeb_resultados.adeb_499_publico_media_quintos_ee_todos")
 
 df7 <- DBI::dbGetQuery(con, query7)
+
+
+query9 <- paste(
+  "SELECT *",
+  "FROM vinculos_v6_resumos.uf_v12_publico_ee_sexo_remuneracao_razao")
+
+df9 <- DBI::dbGetQuery(con, query9)
+
+query10 <- paste(
+  "SELECT *",
+  "FROM vinculos_v6_resumos.uf_v12_publico_raca_remuneracao")
+
+df10 <- DBI::dbGetQuery(con, query10)
+
+
 
 ################################################################################
 # tabulacao
@@ -189,6 +208,48 @@ tabela$rem_media_quintos_brasil = tibble(
 
 
 
+### rem media sexo brasil
+tabela$rem_media_brasil_sexo = df9 %>% 
+  group_by(ano, sexo, sexo_nome) %>% 
+  summarise(total_vinculos = sum(total_vinculos_publicos_controlado),
+            rem_soma = sum(rem_soma_vinculos_publicos_controlado)) %>% 
+  ungroup() %>% 
+  mutate(rem_media = round(rem_soma/total_vinculos,4)) %>% 
+  select(ano, sexo_nome, rem_media) %>% 
+  pivot_wider(names_from = sexo_nome, values_from = rem_media, 
+              names_prefix = "rem_media_") %>% 
+  mutate(razao_rem_media = round(rem_media_masculino/rem_media_feminino,4))
+
+
+
+### rem media raca brasil
+# limpar nao identificado, amarela e indigena
+# criar nao_brancos = pretos e pardos
+
+tabela$rem_media_brasil_cor = df10 %>% 
+  rename(cor = raca_script_r_resultado) %>% 
+  filter(cor %in% c(2,4,8)) %>%
+  mutate(cor_branca = case_when(
+    cor == 2 ~ 1,
+    cor %in% c(4,8) ~ 0,
+    .default = NA_integer_
+  ),
+  cor_descricao = factor(cor_branca,
+                           levels = c(0,1),
+                           labels = c('negros','brancos'))
+  ) %>% 
+  group_by(ano, cor_branca, cor_descricao) %>% 
+  summarise(total_vinculos = sum(total_vinculos_publicos_controlado),
+            rem_soma = sum(rem_soma_vinculos_publicos_controlado)) %>% 
+  ungroup() %>% 
+  mutate(rem_media = round(rem_soma/total_vinculos,4)) %>% 
+  select(ano, cor_descricao, rem_media) %>% 
+  pivot_wider(names_from = cor_descricao, values_from = rem_media, 
+              names_prefix = "rem_media_") %>% 
+  mutate(razao_rem_media = round(rem_media_brancos/rem_media_negros,4))
+
+
+
 ## UF
 
 
@@ -201,6 +262,7 @@ tabela$total_uf_sexo = tibble(
   vinculos_executivo_estadual_feminino = df2$executivo_estadual_feminino,
   vinculos_executivo_estadual_masculino = df2$executivo_estadual_masculino
 ) %>% arrange(ano,codigo_uf)
+
 
 ### total cor uf
 tabela$total_uf_cor = df4 %>% 
@@ -249,10 +311,46 @@ tabela$rem_decil_uf = tibble(
   arrange(ano,codigo_uf)
 
 
+### rem media sexo UF
+tabela$rem_media_brasil_sexo_uf = df9 %>% 
+  mutate(rem_media = round(rem_soma_vinculos_publicos_controlado/total_vinculos_publicos_controlado,4)) %>% 
+  select(ano, uf=uf_ipea, sexo_nome, rem_media) %>% 
+  pivot_wider(names_from = sexo_nome, values_from = rem_media, 
+              names_prefix = "rem_media_") %>% 
+  mutate(razao_rem_media = round(rem_media_masculino/rem_media_feminino,4))
+
+
+### rem media raca uf
+# limpar nao identificado, amarela e indigena
+# criar nao_brancos = pretos e pardos
+
+tabela$rem_media_brasil_cor_uf = df10 %>% 
+  rename(cor = raca_script_r_resultado) %>% 
+  filter(cor %in% c(2,4,8)) %>%
+  mutate(cor_branca = case_when(
+    cor == 2 ~ 1,
+    cor %in% c(4,8) ~ 0,
+    .default = NA_integer_
+  ),
+  cor_descricao = factor(cor_branca,
+                         levels = c(0,1),
+                         labels = c('negros','brancos'))
+  ) %>% 
+  group_by(ano, uf=uf_ipea, cor_branca, cor_descricao) %>% 
+  summarise(total_vinculos = sum(total_vinculos_publicos_controlado),
+            rem_soma = sum(rem_soma_vinculos_publicos_controlado)) %>% 
+  ungroup() %>% 
+  mutate(rem_media = round(rem_soma/total_vinculos,4)) %>% 
+  select(ano, uf, cor_descricao, rem_media) %>% 
+  pivot_wider(names_from = cor_descricao, values_from = rem_media, 
+              names_prefix = "rem_media_") %>% 
+  mutate(razao_rem_media = round(rem_media_brancos/rem_media_negros,4))
+
+
 #View(tabela$rem_decil_uf)
 
 
-## dados:
+## dados: ( atualizar lista )
 
 # Panorama Brasil:
 # Total de vínculos anuais no Brasil entre 1985 e 2021
@@ -285,15 +383,16 @@ for(tab in names(tabela)){
 
 
 ## Salvar arquivo em planilha no servidor
-saveWorkbook(wb, file = "/dados/planilha_dados.xlsx", overwrite = TRUE)
-
+saveWorkbook(wb, file = "./dados/planilha_dados.xlsx", overwrite = TRUE)
+# C:\Users\b15048941705\Documents\projeto\
+#saveWorkbook(wb, file = "C:/Users/b15048941705/Documents/projeto/planilha_dados.xlsx", overwrite = TRUE)
 
 ## Atualizar no Google Drive
 ### verificar autorização
 
 googledrive::drive_put(
   path = googledrive::as_dribble("Burocracias subnacionais"),
-  media = "./planilha_dados.xlsx"
+  media = "./dados/planilha_dados.xlsx"
 )
 
 
