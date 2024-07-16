@@ -16,7 +16,7 @@ pacman::p_load(
   c('dplyr','tidyr','ggplot2','ipeaplot','scales','ggtext','viridis'),
   character.only = TRUE)
 
-
+library(ggrepel)
 ## SERIE BRASIL ###############################################################
 ## 
 
@@ -37,11 +37,11 @@ variacao = data %>% filter(
   lag = lag(total),
   variacao_absoluta = total - lag,
   descricao_periodo = c("","1985-1995","1995-2005","2005-2015","2015-2021"),
-  variaca_relativa = round(((total/lag)-1)*100,1)
+  variacao_relativa = round(((total/lag)-1)*100,1)
 ) %>% 
   na.omit() %>% 
   select(
-    descricao_periodo,variacao_absoluta,variaca_relativa)
+    descricao_periodo,variacao_absoluta,variacao_relativa)
 
 variacao2 = data %>% filter(
   ano %in% c(1985,2021)
@@ -53,7 +53,7 @@ variacao2 = data %>% filter(
 ) %>% 
   na.omit() %>% 
   select(
-    descricao_periodo,variacao_absoluta,variaca_relativa)
+    descricao_periodo,variacao_absoluta,variacao_relativa)
 
 variacao = rbind(
   variacao, variacao2
@@ -63,11 +63,11 @@ variacao = rbind(
 
 texto_caption = paste0(
     'Fonte: Rais. Nota: a variação relativa para para os respectivos períodos são: ',
-    round(variacao$variaca_relativa[1]),"%, ",
-    round(variacao$variaca_relativa[2]),"%, ",
-    round(variacao$variaca_relativa[3]),"%, ",
-    round(variacao$variaca_relativa[4]),"% e ",
-    round(variacao$variaca_relativa[5]),"%.")
+    round(variacao$variacao_relativa[1]),"%, ",
+    round(variacao$variacao_relativa[2]),"%, ",
+    round(variacao$variacao_relativa[3]),"%, ",
+    round(variacao$variacao_relativa[4]),"% e ",
+    round(variacao$variacao_relativa[5]),"%.")
 
 }
 # GRAFICO 1 - TOTAL #######################################
@@ -116,6 +116,83 @@ ggsave(filename = "./graficos/brasil_total_variacao.png", device = "png",
        width = 10, height = 6, units = "cm")
 
 
+# GRAFICO 21 - variacao cor ####################################
+data = base_completa$total_brasil_cor
+
+data = data %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual),
+         cor_descricao = as.factor(cor_descricao)) %>% 
+  select(ano, cor, cor_descricao, total)
+
+variacao3 = data %>% 
+  filter(ano %in% c(2004,2021)) %>% 
+  arrange(cor,ano) %>% 
+  mutate(
+  lag = lag(total)) %>% 
+  filter(ano == 2021) %>% 
+  mutate(
+  variacao_absoluta = total - lag,
+  descricao_periodo = rep("2004-2021",5),
+  variacao_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,cor,cor_descricao,variacao_absoluta,variacao_relativa)
+
+texto_caption = paste0(
+  'Fonte: Rais. Nota: a variação relativa para para os respectivos períodos são: ',
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Amarela']),"%, ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Branca']),"%, ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Indígena']),"%, ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Parda']),"% e ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Preta']),"%.")
+
+# GRAFICO 5 - TOTAL COR ###################################
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=total, color=cor_descricao)) +
+  
+  scale_color_ipea() + 
+  scale_color_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
+  labs(title = 'Brasil - Vínculos - Cor',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e cor (2004-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (milhões de unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6),
+                     limits = c(0,2.5e6),
+                     breaks = seq(0,2.5e6,0.5e6)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-3))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/brasil_total_cor.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+
+variacao3 %>% 
+  ggplot(aes(x=cor_descricao, y=variacao_absoluta,fill=cor_descricao)) +
+  geom_col() +
+  scale_color_ipea() + 
+  scale_fill_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
+  labs(title = 'Brasil - Variação de vínculos por cor',
+       subtitle = 'Variação de vínculos públicos no poder Executivo e nível estadual (2004 e 2021)',
+       caption = texto_caption) +
+  ylab('Variação de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
+                     limits = c(-100e3,30e3),
+                     breaks = seq(-100e3,30e3,20e3)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none")
+
+ggsave(filename = "./graficos/brasil_total_cor_variacao.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
 ## SERIE BRASIL SEXO ##########################################################
 ## 
 
@@ -134,7 +211,7 @@ data = data %>%
                        labels = c('Mulher','Homem')))
 
 
-variacao3 = data %>% 
+variacao4 = data %>% 
   filter(ano %in% c(1985,2021)) %>% 
   arrange(sexo) %>% 
   mutate(lag = lag(total)) %>% 
@@ -147,8 +224,32 @@ variacao3 = data %>%
   select(
     descricao_periodo,sexo,variacao_absoluta,variacao_relativa)
 
-texto = list(mulher = round(variacao3$variacao_relativa[variacao3$sexo=="Mulher"]),
-             homem = round(variacao3$variacao_relativa[variacao3$sexo=="Homem"]))
+texto = list(mulher = round(variacao4$variacao_relativa[variacao4$sexo=="Mulher"]),
+             homem = round(variacao4$variacao_relativa[variacao4$sexo=="Homem"]))
+
+
+# variacao total brasil sexo
+# 
+
+variacao4 %>% 
+  ggplot(aes(x=sexo, y=variacao_absoluta,fill=sexo)) +
+  geom_col() +
+  scale_color_ipea() + 
+  #scale_fill_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
+  labs(title = 'Brasil - Variação de vínculos por cor',
+       subtitle = 'Variação de vínculos públicos no poder Executivo e nível estadual (2004 e 2021)',
+       caption = texto_caption) +
+  ylab('Variação de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
+                     limits = c(-100e3,30e3),
+                     breaks = seq(-100e3,30e3,20e3)) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none")
+
+ggsave(filename = "./graficos/brasil_total_cor_variacao.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
 # GRAFICO 3 - TOTAL #######################################
@@ -177,7 +278,7 @@ ggsave(filename = "./graficos/brasil_total_sexo.png", device = "png",
 
 # GRAFICO 4 - variacao ####################################
 
-variacao3 %>% 
+variacao4 %>% 
   ggplot(aes(x=sexo, y=variacao_absoluta,fill=sexo)) +
   geom_col() +
   scale_color_ipea() + 
@@ -193,8 +294,17 @@ variacao3 %>%
                      limits = c(0,.5e6),
                      breaks = seq(0,5e6,0.1e6)) +
   theme(
-    axis.title.x = element_blank(), 
-    legend.position = 'none'
+      axis.title.x = element_blank(),
+      legend.position = "top",
+      legend.title = element_blank(),
+      
+      
+      plot.title = element_text(size = 20),
+      plot.subtitle = element_text(size = 10),
+      axis.title.y = element_text(size = 15),
+      axis.text.x  = element_text(size = 15),
+      axis.text.y = element_text(size = 15),
+      plot.caption = element_text(size = 10)
     )
 
 ggsave(filename = "./graficos/brasil_variacao_sexo.png", device = "png",
@@ -203,40 +313,7 @@ ggsave(filename = "./graficos/brasil_variacao_sexo.png", device = "png",
 
 
 
-## SERIE BRASIL COR ##########################################################
-## 
 
-data = base_completa$total_brasil_cor
-
-data = data %>% 
-  mutate(total = as.numeric(vinculos_executivo_estadual),
-         cor_descricao = as.factor(cor_descricao)) %>% 
-  select(ano, cor, cor_descricao, total)
-
-
-# GRAFICO 5 - TOTAL COR ###################################
-
-ggplot() +
-  geom_line(data = data, aes(x=ano, y=total, color=cor_descricao)) +
-  
-  scale_color_ipea() + 
-  scale_color_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
-  labs(title = 'Brasil - Vínculos - Cor',
-       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e cor (2004-2021)',
-       caption = 'Fonte: Rais') +
-  ylab('Vínculos (milhões de unidades)') +
-  theme_ipea() +
-  scale_y_continuous(labels = unit_format(unit = "M", scale = 1e-6),
-                     limits = c(0,2.5e6),
-                     breaks = seq(0,2.5e6,0.5e6)) +
-  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-3))) +
-  theme(
-    axis.title.x = element_blank(),
-    #legend.position = "top",
-    legend.title = element_blank())
-
-ggsave(filename = "./graficos/brasil_total_cor.png", device = "png",
-       width = 10, height = 6, units = "cm")
 
 
 #################################
@@ -380,6 +457,33 @@ ggsave(filename = "./graficos/brasil_remuneracao_decis_anotacao.png", device = "
        width = 10, height = 6, units = "cm")
 
 # GRAFICO 8 - remuneracao decil brasil linhas #################################
+
+ggplot(data, aes(ano,remuneracao , color= categoria)) + 
+  geom_line() +
+  scale_color_viridis(discrete=TRUE, option = "D",end = 0.8, direction = -1,
+                      guide = guide_legend(reverse = TRUE)) +
+  theme_classic() +
+  labs(title = 'Brasil - Decil de remuneração',
+       subtitle = 'Remuneração de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores corrigidos para setembro de 2023',
+       fill = "Reais") +
+  scale_y_continuous(limits = c(0,12e3), breaks = seq(0,12e3,2e3)) + 
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank()) 
+
+
+ggsave(filename = "./graficos/brasil_remuneracao_decis_linha.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+
+# GRAFICO XXX - novo - remuneracao media decil brasil linhas #################################
+
+data = base_completa$
 
 ggplot(data, aes(ano,remuneracao , color= categoria)) + 
   geom_line() +
@@ -580,10 +684,15 @@ data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>%
 
 # GRAFICO 10 - TOTAL #######################################
 
+# liberar o eixo Y, em mil unidades para diminiur label no eixo Y
+
+dd = data
+data$total[data$ano==2021 & data$codigo_uf=="RO"] = NA_integer_
+
 ggplot() +
-  geom_line(data = data, aes(x=ano, y=total)) +
+  geom_line(data = data, aes(x=ano, y=total/1000)) +
   scale_color_ipea() +
-  facet_wrap(~codigo_uf) +
+  facet_wrap(~codigo_uf, scales = "free") +
   
   
   labs(title = 'Unidades da Federação - Vínculos (mil unidades)',
@@ -591,13 +700,27 @@ ggplot() +
        caption = 'Fonte: Rais') +
   ylab('Vínculos (mil unidades)') +
   theme_ipea() +
-  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
-                     limits = c(0,8.3e5),
-                     breaks = seq(0,8e5,2e5)) +
   scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
   theme(
     axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    
+    title = element_text(size = 20),
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    
+    axis.title.y = element_text(size = 20),
+    axis.text.y = element_text(size = 12),
+    axis.ticks.y = element_blank(),
+    
+    strip.text = element_text(size = 20),
+    plot.caption = element_text(size = 30)
   ) 
+
+
+# scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+#                    limits = c(0,8.3e5),
+#                    breaks = seq(0,8e5,2e5))
 
 ggsave(filename = "./graficos/uf_total.png", device = "png",
        width = 15, height = 15, units = "cm")
@@ -661,6 +784,50 @@ ggsave(filename = "./graficos/uf_total_sexo.png", device = "png",
        width = 15, height = 15, units = "cm")
 
 
+# GRAFICO 11 - TOTAL SEXO LIBERAR EIXO Y #####################
+
+ggplot() +
+  geom_line(data=data2, aes(x=ano, y=total/1000, color=sexo)) +
+  scale_color_ipea() +
+  facet_wrap(~codigo_uf, scales = "free") +
+  
+  scale_color_ipea() +
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Sexo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e sexo (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  # scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                    limits = c(0,5e5),
+  #                    breaks = seq(0,5e5,1e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 12),
+    
+    title = element_text(size = 20),
+    plot.title = element_text(size = 30),
+    plot.subtitle = element_text(size = 20),
+    
+    axis.title.y = element_text(size = 20),
+    axis.text.y = element_text(size = 10),
+    axis.ticks.y = element_blank(),
+    #axis.title.y.left = element_text(vjust = -3),
+    
+    strip.text = element_text(size = 20),
+    legend.title = element_blank(),
+    legend.position = "inside",# = c(0.5,0.1),
+    legend.justification = c(0.8,0.05),
+    legend.text = element_text(size = 20),
+    #legend.justification = c(0.85, 0.05),
+    #legend.direction = "horizontal",
+    plot.caption = element_text(size = 30)
+) 
+
+ggsave(filename = "./graficos/uf_total_sexo_livre_eixo_y.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
 # GRAFICO 11.1 - TOTAL SEXO SEM SAO PAULO##########################
 
 ggplot() +
@@ -714,6 +881,8 @@ data = data %>%
   select(ano,codigo_uf,cor_descricao,total) %>% 
   na.omit()
 
+data$total[data$ano==2021 & data$codigo_uf=="RO"] = NA_integer_
+
 data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>% 
   pivot_longer(-c('ano','codigo_uf'),
                names_to = 'sexo',
@@ -726,10 +895,12 @@ data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>%
 
 # GRAFICO 12 - TOTAL cor #######################################
 
+## liberar eixo Y
+
 ggplot() +
-  geom_line(data = data, aes(x=ano, y=total,group=cor_descricao,color=cor_descricao)) +
+  geom_line(data = data, aes(x=ano, y=total/1000,group=cor_descricao,color=cor_descricao)) +
   scale_color_viridis_d(direction = -1) +
-  facet_wrap(~codigo_uf) +
+  facet_wrap(~codigo_uf, scales = "free") +
   
   
   labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Cor',
@@ -743,11 +914,29 @@ ggplot() +
   scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-5))) +
   theme(
     axis.title.x = element_blank(),
-    legend.title = element_blank()
+    axis.text.x = element_text(size = 12),
+    
+    title = element_text(size = 20),
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    
+    axis.title.y = element_text(size = 20),
+    axis.text.y = element_text(size = 12),
+    axis.ticks.y = element_blank(),
+    
+    strip.text = element_text(size = 20),
+    legend.title = element_blank(),
+    legend.position = c(0.93, 0.05),
+    legend.text = element_text(size = 20),
+    legend.justification = c(0.93, 0.05),
+    legend.direction = "horizontal",
+    plot.caption = element_text(size = 30)
   ) 
 
 ggsave(filename = "./graficos/uf_total_cor.png", device = "png",
-       width = 15, height = 15, units = "cm")
+       width = 18, height = 15, units = "cm")
+
+
 
 # GRAFICO 12.1 - TOTAL cor sem SP #######################################
 
@@ -778,6 +967,7 @@ ggsave(filename = "./graficos/uf_total_cor_sem_SP.png", device = "png",
 
 # GRAFICO 13 - razao cor (branco/(pretos e pardos)) #######################################
 # com o data pré gráfico 12 
+# LIBERAR EIXO Y
 
 data13 = data %>% 
   pivot_wider(
@@ -793,7 +983,7 @@ data13 = data %>%
 ggplot() +
   geom_line(data = data13,
             aes(x=ano, y=razao_b_pp)) +
-  facet_wrap(~codigo_uf) +
+  facet_wrap(~codigo_uf, scales = "free") +
   
   
   labs(title = 'Unidades da Federação - Razão de vínculos no poder Executivo e nível estadual - Cor (2004-2021)',
@@ -811,12 +1001,81 @@ ggplot() +
     plot.title = element_text(size = 40),
     plot.subtitle = element_text(size = 30),
     axis.title.y = element_text(size = 30),
-    axis.text.x  = element_text(size = 40),
+    axis.text.x  = element_text(size = 20),
     axis.text.y = element_text(size = 40),
-    strip.text = element_text(size = 40))
+    strip.text = element_text(size = 40),
+    plot.caption = element_text(size = 30)
+    )
 
 ggsave(filename = "./graficos/uf_total_cor_razao.png", device = "png",
        width = 16, height = 10, units = "in")
+
+
+########## # DADOS DE COR OU RAÇA
+### NOVO - BARRAS 2004 E 2021 - PROP DE BRANCOS
+
+
+data = base_completa$total_uf_cor
+
+siglas = tibble::tibble(
+  codigo = data$codigo_uf,
+  sigla = data$sigla_uf
+) %>% 
+  distinct() %>% 
+  na.omit() %>% 
+  arrange(codigo)
+
+data = data %>% 
+  mutate(codigo_uf = factor(codigo_uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla),
+         cor_descricao = factor(cor_descricao),
+         total= as.numeric(vinculos_executivo_estadual)) %>% 
+  select(ano,codigo_uf,cor_descricao,total) %>% 
+  na.omit() %>% 
+  
+  # NOVA PARTE
+  
+  dplyr::filter(ano %in% c(2004,2021)) %>% 
+  group_by(ano,codigo_uf) %>% 
+  mutate(total_ano = sum(total)) %>% 
+  ungroup() %>% 
+  
+  dplyr::filter(cor_descricao == "Branca") %>% 
+  mutate(prop_branca = round(total/total_ano,3))
+  
+data %>% 
+  ggplot(aes(x=codigo_uf,y=prop_branca*100,fill = factor(ano))) +
+  geom_bar(stat = "identity", position = position_dodge2()) +
+  scale_fill_manual(values = c("#1E69AB","#1EAB2C")) +
+  
+  labs(title = 'Unidades da Federação - Proporção de vínculos de cor branca',
+       subtitle = 'Vínculos públicos no poder Executivo e nível estadual por ano e cor (2004 e 2021)',
+       caption = 'Fonte: Rais.') +
+  ylab('Proporção') +
+  theme_ipea() + 
+  theme(
+    legend.position = "top",
+    legend.title= element_blank(),
+    legend.text = element_text(size = 30),
+    
+    axis.title.x = element_blank(),
+    axis.text.x  = element_text(size = 40),
+    
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    
+    axis.title.y = element_text(size = 40),
+    axis.text.y = element_text(size = 40),
+    
+    plot.caption = element_text(size = 30),
+    strip.text = element_text(size = 40)
+  )
+
+ggsave(filename = "./graficos/uf_total_cor_prop_branca.png", device = "png",
+       width = 16, height = 10, units = "in")
+
+
 
 
 # GRAFICO 16 - remuneracao media UF sexo ####################################
@@ -840,7 +1099,6 @@ ggplot() +
             aes(x=ano, y=razao_rem_media)) +
   facet_wrap(~codigo_uf) +
   
-  
   labs(title = 'Unidades da Federação - Razão de remuneração média entre homens e mulheres',
        subtitle = 'Remuneração média de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
        caption = 'Fonte: Rais. Nota: valores em setembro de 2023. O valor 1 indica remuneração média igual entre homens e mulheres') +
@@ -862,6 +1120,54 @@ ggplot() +
     plot.caption = element_text(size = 30))
 
 ggsave(filename = "./graficos/uf_razao_rem_media_sexo.png", device = "png",
+       width = 16, height = 10, units = "in")
+
+
+
+
+### NOVO - BARRAS 2021 - REMUNERACAO MÉDIA - DESTAQUE DF
+
+
+data = base_completa$rem_media_uf %>% 
+  dplyr::filter(ano == 2021) %>% 
+  mutate(codigo_uf = factor(codigo_uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla),
+         rem_media = round(remuneracao_media_executivo_estadual),
+         destaque = ifelse(codigo_uf=="DF","1","0")) %>% 
+  select(ano,codigo_uf,destaque,rem_media)
+  
+
+data %>% 
+  ggplot(aes(x=codigo_uf,y=rem_media,fill=destaque)) +
+  geom_col() +
+  geom_text(aes(label = rem_media), nudge_y = 300,
+            size = 15) +
+  
+  scale_fill_manual(values = c("#1E69AB","#1EAB2C")) +
+  
+  labs(title = 'Unidades da Federação - Remuneração média',
+       subtitle = 'Vínculos públicos no poder Executivo e nível estadual em 2021',
+       caption = 'Fonte: Rais.') +
+  ylab('Remuneração em reais') +
+  theme_ipea() + 
+  theme(
+    legend.position = "none",
+    
+    axis.title.x = element_blank(),
+    axis.text.x  = element_text(size = 40),
+    
+    plot.title = element_text(size = 40),
+    plot.subtitle = element_text(size = 30),
+    
+    axis.title.y = element_text(size = 30),
+    axis.text.y = element_text(size = 30),
+    
+    plot.caption = element_text(size = 30),
+    strip.text = element_text(size = 30)
+  ) 
+
+ggsave(filename = "./graficos/uf_rem_media_2021_barras.png", device = "png",
        width = 16, height = 10, units = "in")
 
 
@@ -920,6 +1226,67 @@ ggsave(filename = "./graficos/uf_razao_rem_media_cor.png", device = "png",
 
 # detalhe DF
 
+
+
+# GRAFICO xx - remuneracao media e mediana DF ####################################
+
+## ajuste
+apoio =  base_completa$total_uf_sexo %>% 
+  select(codigo_uf,sigla_uf) %>%
+  distinct() %>% 
+  na.omit()
+
+data = base_completa$rem_media_uf %>% 
+  na.omit() %>% 
+  filter(codigo_uf==53) %>% 
+  mutate(codigo_uf = factor(codigo_uf,
+                            levels = siglas$codigo,
+                            labels = siglas$sigla)) %>% 
+  select(ano,codigo_uf,`Média` = remuneracao_media_executivo_estadual,
+         `Mediana` = remuneracao_mediana_executivo_estadual) %>% 
+  pivot_longer(!c(ano,codigo_uf), names_to = "categoria", values_to= "valor"
+    
+  )
+  
+  
+
+ggplot() +
+  geom_line(data = data,
+            aes(x=ano, y=valor,color=categoria)) +
+  ### facet_wrap(~codigo_uf) +
+  
+  
+  scale_color_ipea() + 
+  #scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Distrito Federal - Remuneração média e mediana',
+       subtitle = 'Remuneração média e mediana de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023.') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+   scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+     limits = c(0,12e3),
+     breaks = seq(0,11e3,2e3)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+    theme(
+      axis.title.x = element_blank(),
+      #legend.position.inside = 
+      legend.title = element_blank(),
+      
+      legend.position = "inside",
+      legend.justification = c(0.25,0.99),
+      legend.direction = "horizontal",
+      
+      plot.title = element_text(size = 20),
+      plot.subtitle = element_text(size = 12),
+      axis.title.y = element_text(size = 15),
+      axis.text.x  = element_text(size = 15),
+      axis.text.y = element_text(size = 15),
+      axis.title.y.left = element_text(vjust = -3),
+      plot.caption = element_text(size = 10)
+    ) 
+
+ggsave(filename = "./graficos/DF_remuneracao_media_mediana.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
 # GRAFICO 18 - remuneracao media DF sexo ####################################
@@ -1010,4 +1377,221 @@ ggsave(filename = "./graficos/DF_remuneracao_media_razao_cor.png", device = "png
        width = 10, height = 6, units = "cm")
 
 
+
+# GRAFICO 20 - total DF ####################################
+
+data = base_completa$total_uf_sexo %>% 
+  filter(codigo_uf==53) %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual_feminino) + 
+           as.numeric(vinculos_executivo_estadual_masculino)) %>% 
+  select(ano,total)
+
+ggplot() +
+  geom_line(data = data,
+            aes(x=ano, y=total)) +
+
+  scale_color_ipea() + 
+  #scale_color_discrete() + #(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Distrito Federal - Vínculos',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = 'Fonte: Rais.') +
+  ylab('Vínculos') +
+  theme_ipea() +
+  # scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+  #   limits = c(0,2e5),
+  #   breaks = seq(5e4)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    #legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/DF_total.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+
+# GRAFICO xx - prop mulher DF e brasil  ####################################
+
+data_p1 = base_completa$total_brasil_sexo %>%
+  mutate(prop_mulher = round(
+    as.numeric(vinculos_executivo_estadual_feminino) /
+      (as.numeric(vinculos_executivo_estadual_feminino) + 
+           as.numeric(vinculos_executivo_estadual_masculino)) , 4),
+    local = "Brasil") %>% 
+  select(ano,local,prop_mulher)
+
+data_p2 = base_completa$total_uf_sexo %>% 
+  filter(codigo_uf==53) %>% 
+  mutate(prop_mulher = round(
+    as.numeric(vinculos_executivo_estadual_feminino) /
+      (as.numeric(vinculos_executivo_estadual_feminino) + 
+         as.numeric(vinculos_executivo_estadual_masculino)) , 4),
+    local = "Distrito Federal") %>% 
+  select(ano,local,prop_mulher)
+
+data = rbind(data_p1,data_p2)
+
+
+ggplot(data = data,
+       aes(x=ano, y=prop_mulher,color=local)) +
+  geom_line() +
+  geom_text(aes(label = round(prop_mulher*100)), nudge_y = 0.005) +
+  scale_color_ipea() + 
+  scale_color_manual(values = c('#006450','#0064ff')) +
+  labs(title = 'Brasil e Distrito Federal - Proporção de mulheres',
+       subtitle = 'Vínculos nos estados no Brasil e no Distrito Federal (1985-2021)',
+       caption = 'Fonte: Rais.') +
+  ylab('Proporção') +
+  theme_ipea() +
+  # scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+  #   limits = c(0,2e5),
+  #   breaks = seq(5e4)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+    theme(
+      axis.title.x = element_blank(),
+      legend.position = "top",
+      legend.title = element_blank(),
+      
+      
+      plot.title = element_text(size = 20),
+      plot.subtitle = element_text(size = 15),
+      axis.title.y = element_text(size = 15),
+      axis.text.x  = element_text(size = 15),
+      axis.text.y = element_text(size = 15),
+      plot.caption = element_text(size = 10)
+    ) 
+  
+
+ggsave(filename = "./graficos/DF_BR_proporcao_mulher.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+# GRAFICO xx - total cor DF ####################################
+
+data = base_completa$total_uf_cor
+
+data = data %>% 
+  filter(codigo_uf==53) %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual),
+         cor_descricao = as.factor(cor_descricao)) %>% 
+  select(ano, cor, cor_descricao, total) %>% 
+  
+  group_by(ano) %>% 
+  mutate(total_ano = sum(total)) %>% 
+  ungroup() %>% 
+  mutate(prop_cor = round(total/total_ano*100,4))
+
+
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=prop_cor, color=cor_descricao)) +
+  
+  scale_color_ipea() + 
+  scale_color_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
+  labs(title = 'Distrito Federal - Vínculos - Cor',
+       subtitle = 'Proporção de vínculos públicos no poder Executivo e nível estadual por ano e cor (2004-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Proporção') +
+  theme_ipea() +
+  scale_y_continuous(limits = c(0,85),
+                     breaks = seq(0,80,20)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-3))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "top",
+    legend.title = element_blank(),
+    
+    
+    plot.title = element_text(size = 20),
+    plot.subtitle = element_text(size = 15),
+    axis.title.y = element_text(size = 15),
+    axis.text.x  = element_text(size = 15),
+    axis.text.y = element_text(size = 15),
+    plot.caption = element_text(size = 10)
+    )
+
+ggsave(filename = "./graficos/df_proporcao_cor.png", device = "png",
+       width = 10, height = 6, units = "cm")
+
+# variacao do DF - total 
+# 
+
+
+data = base_completa$total_uf_sexo
+
+data = data %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual_feminino) +
+          as.numeric(vinculos_executivo_estadual_masculino)  ) %>% 
+  select(ano, codigo_uf,sigla_uf, total)
+
+
+variacao = data %>% filter(
+  ano %in% c(1985,1995,2005,2015,2021),
+  codigo_uf == 53
+) %>% mutate(
+  lag = lag(total),
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("","1985-1995","1995-2005","2005-2015","2015-2021"),
+  variacao_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,variacao_absoluta,variacao_relativa)
+
+variacao2 = data %>% filter(
+  ano %in% c(1985,2021), codigo_uf == 53
+) %>% mutate(
+  lag = lag(total),
+  variacao_absoluta = total - lag,
+  descricao_periodo = c("","1985-2021"),
+  variacao_relativa = round(((total/lag)-1)*100,1)
+) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,variacao_absoluta,variacao_relativa)
+
+variacao = rbind(
+  variacao, variacao2
+) %>% mutate(descricao_periodo = factor(
+  descricao_periodo, levels = descricao_periodo, labels=descricao_periodo
+))
+
+texto_caption = paste0(
+  'Fonte: Rais. Nota: a variação relativa para para os respectivos períodos são: ',
+  round(variacao$variacao_relativa[1]),"%, ",
+  round(variacao$variacao_relativa[2]),"%, ",
+  round(variacao$variacao_relativa[3]),"%, ",
+  round(variacao$variacao_relativa[4]),"% e ",
+  round(variacao$variacao_relativa[5]),"%.")
+
+
+variacao %>% 
+  ggplot(aes(x=descricao_periodo, y=variacao_absoluta,fill=descricao_periodo)) +
+  geom_col() +
+  scale_color_ipea() + 
+  scale_fill_manual(values = c(rep('#006450',4),'#0064ff')) +
+  labs(title = 'Distrito Federal - Vínculos',
+       subtitle = 'Variação em períodos de vínculos públicos no poder Executivo e nível estadual por ano (1985-2021)',
+       caption = texto_caption) +
+  ylab('Variação de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "Mil", scale = 1e-3),
+                     limits = c(-20e3,70e3),
+                     breaks = seq(-20e3,70e3,20e3)) +
+
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "none",
+    legend.title = element_blank(),
+    
+    
+    plot.title = element_text(size = 20),
+    plot.subtitle = element_text(size = 10),
+    axis.title.y = element_text(size = 15),
+    axis.title.y.left = element_text(vjust = -3),
+    axis.text.x  = element_text(size = 15),
+    axis.text.y = element_text(size = 15),
+    plot.caption = element_text(size = 10)
+    )
+
+ggsave(filename = "./graficos/DF_total_variacao.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
