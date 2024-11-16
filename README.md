@@ -7,9 +7,7 @@ Códigos de produção de dados e relatórios com dados para municiar o projeto 
 
 repositório: **executivo_estadual**
 
-no servidor Ipea: \\srjn4\atlas\executivo_estadual
-
-em casa: 
+no servidor: \\srjn4\atlas\executivo_estadual
 
 
 
@@ -23,13 +21,27 @@ Para as unidades da federação: segundo sexo, segundo cor, remuneração média
 
 !!!! Importante !!!! - Fazer upload dos dados e gráficos no Google Drive.
 
-**Fazer escolaridade**
+### Fazer: 
+
+**escolaridade**
+
+- arrumar processo geral para voltar a produzir dados e visualizações
+
+- dados para gerar no banco: escolaridade
+
+- tabelas e gráficos para gerar: escolaridade
+
+- analises no texto no drive: verificar
+
+
+
 
 **Gráficos**
 
 Fazer o relativo do total de vínculos com 1993 de ano base
 
-Fazer ajuste nos código de gráficos, serão 3 arquivos de gráficos: Brasil, total UF e remuneração UF. Estou arrumando o layout, já existem gráficos de UF com layout corrigido, como o *uf_total.png* e o *uf_remuneracao_media_mediana.png*.
+Fazer ajuste nos código de gráficos, serão 3 arquivos de gráficos: Brasil, total UF e remuneração UF. 
+Estou arrumando o layout, já existem gráficos de UF com layout corrigido, como o *uf_total.png* e o *uf_remuneracao_media_mediana.png*.
 
 
 
