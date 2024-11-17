@@ -27,7 +27,7 @@ Para as unidades da federação: segundo sexo, segundo cor, remuneração média
 
 - arrumar processo geral para voltar a produzir dados e visualizações
 
-- dados para gerar no banco: escolaridade
+- dados para gerar no banco: escolaridade e explorar ocupações
 
 - tabelas e gráficos para gerar: escolaridade
 

@@ -6,18 +6,21 @@
 #                                             #
 ###############################################
 
-## tabulacao inicial - 15/03/2024
-## tabulacao inicial - 21/03/2024
-## revisão de código - 26/06/2024
+## VERSOES DO CODIGO
 
-require(dplyr)
-require(openxlsx)
-require(tidyr)
-require(stringr)
+## tabulacao inicial           - 15/03/2024
+## tabulacao inicial           - 21/03/2024
+## revisão de código           - 26/06/2024
+## volta a trabalhar nos dados - 16/11/2024
+
+pacman::p_load(char = c("dplyr","openxlsx","tidyr","stringr"))
 
 
 diretorio_trabalho = "//srjn4/atlas/executivo_estadual/"
 setwd(diretorio_trabalho)
+
+
+## TABELAS
 
 # tabela fonte 1: vinculos_v6_resumos.brasil_v12_esfera_x_poder
 # tabela fonte 2: vinculos_v6_resumos.brasil_v12_corxsexoxpoderxesfera
@@ -39,15 +42,10 @@ setwd(diretorio_trabalho)
 # conectar e coletar
 ################################################################################
 
-con <- DBI::dbConnect(RPostgres::Postgres(),
-                      dbname = "rais_2019",
-                      host = "psql10-df",
-                      port = 5432,
-                      user = keyring::key_get("id_ipea"),
-                      password = keyring::key_get("pw_ipea_psql10-df"))
+source('../atlas_estado/ATLAS_2024/conectar.R')
 
-identical(DBI::dbGetInfo(con)$host, "psql10-df")
-
+# consultas e carregar em memoria
+{
 query1 <- paste(
   "SELECT ano,",
   "vinculos_executivo_estadual,",                     
@@ -112,7 +110,7 @@ query10 <- paste(
   "FROM vinculos_v6_resumos.uf_v12_publico_raca_remuneracao")
 
 df10 <- DBI::dbGetQuery(con, query10)
-
+}
 
 
 ################################################################################
@@ -121,6 +119,8 @@ df10 <- DBI::dbGetQuery(con, query10)
 
 tabela <- list()
 
+# tratamento dos dados
+{
 ## BRASIL
 
 ### total brasil
@@ -346,6 +346,7 @@ tabela$rem_media_brasil_cor_uf = df10 %>%
               names_prefix = "rem_media_") %>% 
   mutate(razao_rem_media = round(rem_media_brancos/rem_media_negros,4))
 
+}
 
 #View(tabela$rem_decil_uf)
 
@@ -367,6 +368,9 @@ tabela$rem_media_brasil_cor_uf = df10 %>%
 # Decis da remuneração média mensal no ano dos vínculos, por UF entre 1985 e 2021
 
 
+rm(list = setdiff(ls(),c('tabela','con','diretorio_trabalho')))
+
+
 ################################################################################
 # planilha de dados para exportar
 ################################################################################
@@ -383,9 +387,11 @@ for(tab in names(tabela)){
 
 
 ## Salvar arquivo em planilha no servidor
-saveWorkbook(wb, file = "./dados/planilha_dados.xlsx", overwrite = TRUE)
+saveWorkbook(wb, file = "./dados/planilha_dados_novembro.xlsx", overwrite = TRUE)
 # C:\Users\b15048941705\Documents\projeto\
 #saveWorkbook(wb, file = "C:/Users/b15048941705/Documents/projeto/planilha_dados.xlsx", overwrite = TRUE)
+
+
 
 ## Atualizar no Google Drive
 ### verificar autorização
