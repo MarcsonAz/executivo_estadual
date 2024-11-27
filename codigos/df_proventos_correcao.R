@@ -134,7 +134,7 @@ for(i in 1:length(lista$ano_i)){
   
 }
 
-# valor 1 no fator acumulado para 2023
+# valor 1 no fator acumulado para dezembro de 2023
 df_saida = rbind(df_saida,tibble(
   inicio=as_date( formato_ano_mes( 2023,12)),
   fim = as_date( formato_ano_mes( 2023,12)),
@@ -153,10 +153,56 @@ rm(list = setdiff(ls(),'df_saida'))
 ##########################################
 # ETAPA 2
 
-library(readr)
+## dados zipados e qu são 3 arquivos
 
-df_empilhado <- read_csv("//srjn4/atlas/executivo_estadual/dados/df_empilhado.csv", 
-                         col_types = cols(lotacao = col_character()))
+zipdir <- "novo_dados/secretarias.zip"
+tmp <- paste0(getwd(),'/novo_dados/')
+unzip(zipdir, exdir = tmp)
+dir(tmp, recursive = TRUE)
+
+df_31 <- read_xlsx("novo_dados/secretaria_31.xlsx")
+df_50 <- read_xlsx("novo_dados/secretaria_50.xlsx")
+df_07 <- read_xlsx("novo_dados/secretaria_7.xlsx" )
+
+df_31$PROVENTOS %>% head()
+df_50$PROVENTOS %>% head()
+df_07$PROVENTOS %>% head()
+
+df_31 <- df_31 %>% mutate(
+  PROVENTOS = as.numeric(stringr::str_replace(as.character(PROVENTOS),",","."))
+)
+
+df_50 <- df_50 %>% mutate(
+  PROVENTOS = as.numeric(stringr::str_replace(as.character(PROVENTOS),",","."))
+)
+
+df_empilhado_inicial <- rbind(
+  df_07,df_50,df_31)
+
+table(
+  df_empilhado_inicial$EMPRESA,
+  is.na(df_empilhado_inicial$PROVENTOS)
+)
+# 
+#       FALSE
+# 031  39167
+# 050 130576
+# 7   232990
+
+
+arrow::write_parquet(df_empilhado_inicial,
+                     sink = "novo_dados/df_empilhado.parquet")
+
+rm(list = setdiff(ls(),'df_saida'))
+gc()
+cat('\014')
+
+
+## lar aqruivo pra correcao de valores
+
+df_empilhado <- arrow::read_parquet("novo_dados/df_empilhado.parquet")
+df_empilhado <- janitor::clean_names(df_empilhado)
+
 
 # adicionar dados
 df_empilhado2 = left_join(
