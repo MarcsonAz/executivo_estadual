@@ -335,6 +335,13 @@ data = data %>%
                        levels = c("media", "mediana"),
                        labels = c('Média','Mediana')))
 
+data2 <- tabela$rem_media_brasil_nf %>% 
+  pivot_longer(cols = remuneracao_media_federal:remuneracao_media_municipal,
+               names_to = 'categoria')
+
+
+data2 %>% filter(ano %in% c(1985,2021)) %>% 
+  View()
 
 
 # GRAFICO 6 - remuneracao media brasil ####################################
@@ -362,6 +369,31 @@ ggsave(filename = "./graficos/brasil_remuneracao_media_mediana.png", device = "p
        width = 10, height = 6, units = "cm")
 
 
+
+# GRAFICO 6.1 - remuneracao media brasil por nivel federativo ###############
+
+ggplot() +
+  geom_line(data = data2, aes(x=ano, y=value, color=categoria),
+            linewidth = 1.5) +
+  
+  #scale_color_discrete() + 
+  scale_color_discrete(label=c("Federal","Estadual","Municipal")) +
+  labs(title = 'Brasil - Remuneração',
+       subtitle = 'Remuneração média de vínculos públicos por nível federativo por ano (1985-2021)',
+       caption = 'Fonte: Rais. Nota: valores em setembro de 2023') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(#labels = unit_format(unit = "M", scale = 1e-6),
+    limits = c(0,14000),
+    breaks = seq(0,14000,2000)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.position = "top",
+    legend.title = element_blank())
+
+ggsave(filename = "./graficos/brasil_remuneracao_media_nivelfederativo.png", device = "png",
+       width = 10, height = 6, units = "cm")
 
 
 # dados - decil
@@ -681,6 +713,12 @@ data2 = data %>% select(ano,codigo_uf,total_mulher,total_homem) %>%
                        labels = c('Mulher','Homem')
                        ))
 
+data3 = data2 %>% 
+  filter(ano %in% c(1985,2021)) %>%
+  pivot_wider(names_from = ano, values_from = total) %>% 
+  mutate(`1985` = ifelse(is.na(`1985`),0,`1985`),
+         `2021` = ifelse(is.na(`2021`),0,`2021`)) %>% 
+  mutate(diff = `2021` - `1985`)
 
 # GRAFICO 10 - TOTAL #######################################
 
@@ -857,6 +895,42 @@ ggplot() +
 
 ggsave(filename = "./graficos/uf_total_sexo_sem_sp.png", device = "png",
        width = 15, height = 15, units = "cm")
+
+
+# GRAFICO 11.3 - TOTAL SEXO variacao ##########################
+
+ggplot() +
+  geom_col(data=data3,
+            aes(x=codigo_uf, y=diff)) +
+  scale_color_ipea() +
+  facet_wrap(~sexo,ncol=1) +
+  
+  scale_color_ipea() +
+  labs(title = 'Unidades da Federação - Vínculos (mil unidades) - Sexo - Sem São Paulo',
+       subtitle = 'Total de vínculos públicos no poder Executivo e nível estadual por ano e sexo (1985-2021)',
+       caption = 'Fonte: Rais') +
+  ylab('Vínculos (mil unidades)') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+                     limits = c(0,2.5e5),
+                     breaks = seq(0,2.5e5,1e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "inside",# = c(0.5,0.1),
+    legend.justification = c(0.8,0.05),
+    #legend.box.just = "bottom",
+    #legend.margin = margin(6, 6, 6, 6)
+  ) 
+
+ggsave(filename = "./graficos/uf_total_sexo_sem_sp.png", device = "png",
+       width = 15, height = 15, units = "cm")
+
+
+
+
+
 
 ##################################################
 ########## # DADOS DE COR OU RAÇA

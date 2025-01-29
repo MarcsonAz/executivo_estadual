@@ -110,6 +110,25 @@ query10 <- paste(
   "FROM vinculos_v6_resumos.uf_v12_publico_raca_remuneracao")
 
 df10 <- DBI::dbGetQuery(con, query10)
+
+query11 <- paste(
+  "SELECT ano,",
+  "vinculos_federal,",
+  "vinculos_estadual,",
+  "vinculos_municipal,",
+  "vinculos_federal_controlado,",
+  "vinculos_estadual_controlado,",
+  "vinculos_municipal_controlado,",
+  "rem_soma_vinculos_federal_controlado,",
+  "rem_soma_vinculos_estadual_controlado,",
+  "rem_soma_vinculos_municipal_controlado",
+  "FROM vinculos_v6_resumos.brasil_v12_esfera_poder")
+
+df11 <- DBI::dbGetQuery(con, query11)
+
+df12 <- 
+
+
 }
 
 
@@ -163,6 +182,38 @@ tabela$rem_media_brasil = tibble(
     df1$rem_soma_vinculos_executivo_estadual_controlado/df1$vinculos_executivo_estadual_controlado,4),
   remuneracao_mediana_executivo_estadual = df1$rem_mediana_vinculos_executivo_estadual_controlado
 ) %>% arrange(ano)
+
+##### tabela de CV
+## cv para anos selecioandos
+## cv 1985
+## cv 1995
+## cv 2005
+## cv 2015
+## cv 2021
+
+tabela$rem_media_brasil_nf = tibble(
+  ano = df11$ano,
+  remuneracao_media_federal = round( 
+    df11$rem_soma_vinculos_federal_controlado/df11$vinculos_federal_controlado,4),
+  remuneracao_media_estadual = round( 
+    df11$rem_soma_vinculos_estadual_controlado/df11$vinculos_estadual_controlado,4),
+  remuneracao_media_municipal = round( 
+    df11$rem_soma_vinculos_municipal_controlado/df11$vinculos_municipal_controlado,4),
+) %>% arrange(ano)
+
+
+
+### rem media e brasil por nivel federativo
+tabela$rem_media_brasil_nf = tibble(
+  ano = df11$ano,
+  remuneracao_media_federal = round( 
+    df11$rem_soma_vinculos_federal_controlado/df11$vinculos_federal_controlado,4),
+  remuneracao_media_estadual = round( 
+    df11$rem_soma_vinculos_estadual_controlado/df11$vinculos_estadual_controlado,4),
+  remuneracao_media_municipal = round( 
+    df11$rem_soma_vinculos_municipal_controlado/df11$vinculos_municipal_controlado,4),
+) %>% arrange(ano)
+
 
 
 ### decis brasil
