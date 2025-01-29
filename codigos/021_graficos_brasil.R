@@ -567,7 +567,7 @@ ggsave(filename = "./graficos/brasil_remuneracao_decis_razao_9_1.png", device = 
 data = base_completa$rem_media_quintos_brasil
 
 # para grafico 14
-data = data %>% 
+data = data %>%  
   select(!...1) %>% 
   pivot_longer(!ano,
                names_to = 'categoria',
@@ -589,7 +589,8 @@ data = data %>%
                               'Média entre 40 e 60',
                               'Média entre 60 e 80',
                               'Média acima do 80'
-                            ))) 
+                            ))) %>% 
+  na.omit()
 
 ggplot(data, aes(ano,remuneracao , color= categoria)) + 
   geom_line() +
@@ -609,6 +610,14 @@ ggplot(data, aes(ano,remuneracao , color= categoria)) +
     #legend.position = "top",
     legend.title = element_blank()) 
 
+# variacao nos dados
+
+df_cv_rem <- data %>% 
+  group_by(categoria) %>% 
+  summarise(desvio_padrao = sd(remuneracao),
+            media = mean(remuneracao)) %>% 
+  ungroup() %>% 
+  mutate(cv = round(desvio_padrao/media,3))
 
 ggsave(filename = "./graficos/brasil_remuneracao_media_quintos_linha.png", device = "png",
        width = 10, height = 6, units = "cm")

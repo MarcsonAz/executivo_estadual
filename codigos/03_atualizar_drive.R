@@ -15,7 +15,7 @@ arquivos_dados <- fs::dir_ls('./dados',glob = '*.xlsx')
 hoje = as.Date(Sys.time())
 
 
-for(arq in arquivos_dados){
+for(arq in arquivos){
   arq_info = fs::file_info(arq)
   arq_date = as.Date(arq_info$modification_time)
   
