@@ -1,11 +1,11 @@
 # leitura e tratamento de dados para o relatorio
 
 ## tratamento inicial - 01/04/2024
+## ULTIMA VERSAO - 04/02/2025
 
-require(dplyr)
-require(openxlsx)
-require(stringr)
-require(readxl)
+pacman::p_load(
+  c('dplyr','openxlsx','stringr','readxl'), #'ipeaplot','scales','ggtext','viridis',
+  character.only = TRUE)
 
 diretorio_trabalho = getwd()
 
@@ -44,7 +44,7 @@ multiplesheets <- function(fname) {
 # planilha
 ################################################################################
 
-caminho_planilha = './dados/planilha_dados.xlsx'
+caminho_planilha = './dados/planilha_dados_FINAL.xlsx'
 base_completa <- multiplesheets(caminho_planilha)
 
 

@@ -126,8 +126,93 @@ query11 <- paste(
 
 df11 <- DBI::dbGetQuery(con, query11)
 
-df12 <- 
+query12 <- paste(
+  "select ano, codigo, uf, rem_media_federal_total, rem_media_estadual_total, rem_media_municipal_total
+  FROM vinculos_v6_resumos.uf_v12_esfera_e_poder")
 
+df12 <- DBI::dbGetQuery(con, query12)
+
+query13 <- paste(
+  "SELECT v.ano,
+    v.uf_ipea,
+    raca.raca_script_r_resultado,
+    v.cbo2002,
+    count(1) AS total_vinculos_publicos,
+    count(case
+          WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric then 1
+          ELSE NULL::numeric
+          END::double precision) AS total_vinculos_publicos_controlado,
+    sum(case
+        WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric THEN v.rem_ipea
+        ELSE NULL::numeric
+        END::double precision) AS rem_soma_vinculos_publicos_controlado
+    FROM vinculos_v6.tb_vinculos_2021 v
+    JOIN rfb.tb_ipea_rfb_publicos r ON r.cnpj_texto::text = v.id_estab::text
+    LEFT JOIN site_adeb_v3.tb_cpf_publico_raca_cor_v2_2004_2021 raca ON raca.cpf = v.cpf::text
+    LEFT JOIN mvw_rendimento_publico_corte corte ON corte.ano = v.ano AND corte.poder::text = r.poder::text AND corte.esfera::text = r.esfera::text
+    WHERE r.poder::text = 'E'::text AND r.esfera::text = 'E'::text
+    GROUP BY v.ano, v.uf_ipea, raca.raca_script_r_resultado,v.cbo2002
+    ORDER BY v.ano DESC")
+
+df13 <- DBI::dbGetQuery(con, query13)
+
+query14 <- paste(
+  "SELECT v.ano,
+    v.uf_ipea,
+    raca.raca_script_r_resultado,
+    v.genero as sexo,
+    case
+    	when v.genero = 1 then 'Homem'
+    	when v.genero = 2 then 'Mulher'
+    end as sexo_descricao,    
+    v.cbo2002,
+    count(1) AS total_vinculos_publicos,
+    count(case
+          WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric then 1
+          ELSE NULL::numeric
+          END::double precision) AS total_vinculos_publicos_controlado,
+    sum(case
+        WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric THEN v.rem_ipea
+        ELSE NULL::numeric
+        END::double precision) AS rem_soma_vinculos_publicos_controlado
+    FROM vinculos_v6.tb_vinculos_2021 v
+    JOIN rfb.tb_ipea_rfb_publicos r ON r.cnpj_texto::text = v.id_estab::text
+    LEFT JOIN mvw_rendimento_publico_corte corte ON corte.ano = v.ano AND corte.poder::text = r.poder::text AND corte.esfera::text = r.esfera::text
+    WHERE r.poder::text = 'E'::text AND r.esfera::text = 'E'::text
+    GROUP BY v.ano, v.uf_ipea, v.genero ,v.cbo2002
+    ORDER BY v.ano DESC")
+
+df14 <- DBI::dbGetQuery(con, query14)
+
+query15 <- 
+  "select codigo, titulo
+  from cbo.\"05_ocupacao\""
+cbo <- DBI::dbGetQuery(con, query15)
+
+query16 <- paste(
+  "SELECT v.ano,
+    v.uf_ipea,
+    raca.raca_script_r_resultado as cor,
+    v.genero as sexo,
+    v.cbo2002,
+    count(1) AS total_vinculos_publicos,
+    count(case
+          WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric then 1
+          ELSE NULL::numeric
+          END::double precision) AS total_vinculos_publicos_controlado,
+    sum(case
+        WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric THEN v.rem_ipea
+        ELSE NULL::numeric
+        END::double precision) AS rem_soma_vinculos_publicos_controlado
+    FROM vinculos_v6.tb_vinculos_2021 v
+    JOIN rfb.tb_ipea_rfb_publicos r ON r.cnpj_texto::text = v.id_estab::text
+    LEFT JOIN site_adeb_v3.tb_cpf_publico_raca_cor_v2_2004_2021 raca ON raca.cpf = v.cpf::text
+    LEFT JOIN mvw_rendimento_publico_corte corte ON corte.ano = v.ano AND corte.poder::text = r.poder::text AND corte.esfera::text = r.esfera::text
+    WHERE r.poder::text = 'E'::text AND r.esfera::text = 'E'::text
+    GROUP BY v.ano, v.uf_ipea, raca.raca_script_r_resultado, v.genero ,v.cbo2002
+    ORDER BY v.ano DESC")
+
+df16 <- DBI::dbGetQuery(con, query16)
 
 }
 
@@ -191,17 +276,6 @@ tabela$rem_media_brasil = tibble(
 ## cv 2015
 ## cv 2021
 
-tabela$rem_media_brasil_nf = tibble(
-  ano = df11$ano,
-  remuneracao_media_federal = round( 
-    df11$rem_soma_vinculos_federal_controlado/df11$vinculos_federal_controlado,4),
-  remuneracao_media_estadual = round( 
-    df11$rem_soma_vinculos_estadual_controlado/df11$vinculos_estadual_controlado,4),
-  remuneracao_media_municipal = round( 
-    df11$rem_soma_vinculos_municipal_controlado/df11$vinculos_municipal_controlado,4),
-) %>% arrange(ano)
-
-
 
 ### rem media e brasil por nivel federativo
 tabela$rem_media_brasil_nf = tibble(
@@ -214,6 +288,18 @@ tabela$rem_media_brasil_nf = tibble(
     df11$rem_soma_vinculos_municipal_controlado/df11$vinculos_municipal_controlado,4),
 ) %>% arrange(ano)
 
+### rem media e UF por nivel federativo
+
+
+df12 <- df12 %>% 
+  dplyr::filter(!is.na(codigo)) %>% 
+  mutate(
+    rem_media_municipal_total = ifelse(
+      uf=="DF", NA_real_, rem_media_municipal_total
+    )
+  )
+
+tabela$rem_media_uf_nf = tibble(df12) %>% arrange(ano)
 
 
 ### decis brasil
@@ -399,7 +485,124 @@ tabela$rem_media_brasil_cor_uf = df10 %>%
 
 }
 
+
+###### dentro de cada UF, calcular a proporção de mulhere e pp .
+## correlação disso com a rem media
+# 27 correlações
+# média disso
+
+tab_01 = df13 %>% 
+  filter(!(uf_ipea %in% c(11,23,51,16,21) )) %>%
+  group_by(uf_ipea,cbo2002) %>% 
+  summarise(total_vinculos = sum(total_vinculos_publicos),
+            rem_media = round(
+              sum(rem_soma_vinculos_publicos_controlado,na.rm = TRUE)/sum(total_vinculos_publicos_controlado),
+              4)) %>% 
+  ungroup() %>% 
+  left_join(cbo,by = join_by(cbo2002 == codigo)) %>% 
+  select(uf_ipea, cbo2002, titulo,total_vinculos, rem_media) %>% 
+  filter(total_vinculos>=10) %>% 
+  na.omit()
+
+
+tab_02 = df13 %>% 
+  filter(!(uf_ipea %in% c(11,23,51,16,21) )) %>%
+  mutate(cor = case_when(
+    raca_script_r_resultado == 1 ~ "Índigena",
+    raca_script_r_resultado == 2 ~ "Branca",
+    raca_script_r_resultado == 4 ~ "Preta",
+    raca_script_r_resultado == 6 ~ "Amarela",
+    raca_script_r_resultado == 8 ~ "Parda",
+    .default = NA_character_
+  ),
+  cor_pre_par = case_when(
+    raca_script_r_resultado %in% c(1,2,6) ~ "Não Preta ou Parda",
+    raca_script_r_resultado %in% c(4,8) ~ "Preta ou Parda",
+    .default = NA_character_
+  )) %>%
+  filter(!is.na(cor_pre_par)) %>% 
+  group_by(uf_ipea, cbo2002, cor_pre_par) %>% 
+  summarise(total_uf_cbo_cor = sum(total_vinculos_publicos)) %>% 
+  mutate(total_uf_cbo = sum(total_uf_cbo_cor)) %>%
+  ungroup() %>% 
+  filter(cor_pre_par == "Preta ou Parda") %>% 
+  mutate(prop_cor_pre_par = round(100*total_uf_cbo_cor/total_uf_cbo,4))
+
+tab_03 = df14 %>% 
+  filter(!(uf_ipea %in% c(11,23,51,16,21) )) %>%
+  group_by(uf_ipea, cbo2002, sexo_descricao) %>% 
+  summarise(total_uf_cbo_sexo = sum(total_vinculos_publicos)) %>% 
+  mutate(total_uf_cbo = sum(total_uf_cbo_sexo)) %>%
+  ungroup() %>% 
+  filter(sexo_descricao == "Mulher") %>% 
+  mutate(prop_sexo_mulher = round(100*total_uf_cbo_sexo/total_uf_cbo,4))
+
+
+#### colocar a proporcao dentro da tabela de ocupacoes com o filtro de mínimo de 30 pocupacoes diferentes
+# removidas UFS:
+# 11,23 e 51
+# 23, 11, 16,21,51
+
+tt = left_join(tab_01, tab_02) %>% 
+  
+  left_join(tab_03 %>% 
+    select(uf_ipea,cbo2002, prop_sexo_mulher)) %>%
+  
+  select(uf_ipea, cbo2002,nome_ocupacao = titulo, total_vinculos,rem_media,
+         prop_cor_pre_par,prop_sexo_mulher) %>% 
+  mutate(prop_cor_pre_par = replace_na(prop_cor_pre_par,0),
+         prop_sexo_mulher = replace_na(prop_sexo_mulher,0))
+
+zz = tt %>% group_by(uf_ipea) %>% summarise(t=sum(total_vinculos))
+# calcular a correlação para cada UF
+
+a = tt %>% group_by(uf_ipea) %>% 
+  summarise(cor_pp_rem = cor(prop_cor_pre_par,rem_media))
+
+ggplot(a, aes(x=uf_ipea , y=cor_pp_rem))+ ggplot2::geom_col()
+
+round(mean(a$cor_pp_rem),2)
+
+a = tt %>% group_by(uf_ipea) %>% 
+  summarise(cor_mul_rem = cor(prop_sexo_mulher,rem_media))
+
+ggplot(a, aes(x=uf_ipea , y=cor_mul_rem))+ ggplot2::geom_col()
+
+round(mean(a$cor_mul_rem),2)
+
 #View(tabela$rem_decil_uf)
+
+
+##########
+##########
+##########
+##########
+##########
+##########  SEXO X COR
+
+tab16 = df16 %>% 
+  filter(!is.na(cor)) %>% 
+  mutate(sexo_cor = case_when(
+    cor %in% c(4,8) & sexo == 1 ~ 'Homem Preto ou Pardo',
+    cor == 2 & sexo == 1 ~ 'Homem Branco',
+    cor %in% c(4,8) & sexo == 2 ~ 'Mulher Preta ou Parda',
+    cor == 2 & sexo == 2 ~ 'Mulher Branca',
+    .default = NA_character_
+  )) %>% 
+  group_by(ano,cbo2002, sexo_cor) %>% 
+  summarise(total = sum(total_vinculos_publicos),
+            rem_media = round(
+              sum(rem_soma_vinculos_publicos_controlado)/sum(total_vinculos_publicos_controlado),4)
+  ) %>% 
+  
+  left_join(cbo,by = join_by(cbo2002 == codigo)) %>% 
+  na.omit()
+  
+
+tab16 %>% group_by(sexo_cor) %>% 
+  summarise(media = mean(rem_media))
+
+
 
 
 ## dados: ( atualizar lista )
@@ -438,7 +641,8 @@ for(tab in names(tabela)){
 
 
 ## Salvar arquivo em planilha no servidor
-saveWorkbook(wb, file = "./dados/planilha_dados_novembro.xlsx", overwrite = TRUE)
+#saveWorkbook(wb, file = "./dados/planilha_dados_novembro.xlsx", overwrite = TRUE)
+saveWorkbook(wb, file = "./dados/planilha_dados_FINAL.xlsx", overwrite = TRUE)
 # C:\Users\b15048941705\Documents\projeto\
 #saveWorkbook(wb, file = "C:/Users/b15048941705/Documents/projeto/planilha_dados.xlsx", overwrite = TRUE)
 

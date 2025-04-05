@@ -156,7 +156,10 @@ tab_03 = df2 %>%  group_by(cbo2002, sexo_descricao) %>%
   filter(sexo_descricao == "Mulher") %>% 
   mutate(prop_sexo_mulher = round(100*total_cbo_sexo/total_cbo,4))
 
-
+tab_03 = tab_03 %>% filter(total_cbo>=100)
+  
+  
+  
 #### colocar a proporcao dentro da tabela de ocupacoes com o filtro de 
 # minimo de 100 vinculos
 
@@ -275,7 +278,29 @@ ggsave(filename = "./graficos/uf_proporcao_prepar_representacao.png", device = "
 
 
 
+queryx <- paste(
+  "SELECT v.ano,
+    v.uf_ipea,
+    raca.raca_script_r_resultado,
+    v.cbo2002,
+    count(1) AS total_vinculos_publicos,
+    count(case
+          WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric then 1
+          ELSE NULL::numeric
+          END::double precision) AS total_vinculos_publicos_controlado,
+    sum(case
+        WHEN v.rem_ipea < corte.corte_media_4sd_rem_ipea AND v.rem_ipea > 0::numeric THEN v.rem_ipea
+        ELSE NULL::numeric
+        END::double precision) AS rem_soma_vinculos_publicos_controlado
+    FROM vinculos_v6.tb_vinculos_2021 v
+    JOIN rfb.tb_ipea_rfb_publicos r ON r.cnpj_texto::text = v.id_estab::text
+    LEFT JOIN site_adeb_v3.tb_cpf_publico_raca_cor_v2_2004_2021 raca ON raca.cpf = v.cpf::text
+    LEFT JOIN mvw_rendimento_publico_corte corte ON corte.ano = v.ano AND corte.poder::text = r.poder::text AND corte.esfera::text = r.esfera::text
+    WHERE r.poder::text = 'E'::text AND r.esfera::text = 'E'::text
+    GROUP BY v.ano, v.uf_ipea, raca.raca_script_r_resultado,v.cbo2002
+    ORDER BY v.ano DESC")
 
+dfx <- DBI::dbGetQuery(con, queryx)
 
 
 
