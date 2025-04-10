@@ -887,11 +887,11 @@ tt %>% ggplot(aes(x=prop_sexo_mulher,y=rem_media,color=factor(sigla_uf))) +
     legend.text = element_text(size = 30),
     legend.title = element_text(size = 30),
     
-    axis.text.x  = element_text(size = 30),
+    axis.text.x = element_text(size = 30),
     axis.title.x = element_text(size = 30),
     
-    axis.title.y = element_text(size = 30),
-    axis.text.y = element_text(size = 30)
+    axis.text.y = element_text(size = 30),
+    axis.title.y = element_text(size = 30)
   ) 
 
 ggsave(filename = nome_grafico("dispersao_ocupacao_sexo_rem_media"), 
