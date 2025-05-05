@@ -48,6 +48,19 @@ where v.ano = 2021 and v.poder = 'Executivo' and v.nivel_federativo in ('Estadua
 group by v.ano, v.cbo_base, v.sexo, v.cor_raca")
 
 df3 <- DBI::dbGetQuery(con, query3)
+
+
+# teste para publico geral
+query4 <- paste(
+  "select ano, sexo, sexo_descricao, cbo_familia,
+count(*) as total_vinculos
+from vinculos_v6_auxiliar.tb_teste_segregacao_publico_lixo
+group by ano, sexo, sexo_descricao, cbo_familia
+order by ano, sexo, sexo_descricao, cbo_familia")
+
+df4 <- DBI::dbGetQuery(con, query4)
+
+
 # colunas: ocupacao - grupo (sexo_cor) - n
 
 ##  TRATAMENTO
@@ -369,10 +382,13 @@ dissimilarity(m2, "group", "unit", weight = "n")
 
  
 
+segregation::mutual_total(data = dados, group = "ocupacao", 
+                          unit = "grupo", weight = "n")
 
 
 
-
+segregation::dissimilarity(data = dados, group = "grupo", 
+                          unit = "ocupacao", weight = "n")
 
 
 
