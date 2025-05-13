@@ -1,0 +1,37 @@
+TRATAMENTOS DOS DADOS
+
+1 - DADOS GERAIS
+
+Total em 2021 - 
+Total público em 2021 - 
+Proporções da série 85 -
+Total com a aplicação do filtro de público executivo estadual em 2021 -
+Gráfico 2 - Remuneração média de vínculos públicos nos níveis federal, estadual e municipal - rem_media_publico_por_nf - código dos dados e código do gráfico
+Gráfico 5 - Remuneração média entre os quintos de remuneração de vínculos públicos no poder Executivo e nível estadual - rem_media_publico_ee_por_quintil - código dos dados e código do gráfico
+Tabela 1 - Distribuição das remunerações mensais do funcionalismo no Executivo estadual, a média, o desvio padrão e o coeficiente de variação, em anos selecionados. - rem_media_dp_cv_publico_ee - código dos dados e código do gráfico
+Gráfico 6 - Razão entre o nono e o primeiro decis de remuneração de vínculos públicos no poder Executivo e nível estadual - rem_razao_decil_9_1_publico_ee - código dos dados e código do gráfico
+
+Total e proporção de mulheres no público e no EE - 1985 e 2021 - 
+
+
+2 - DADOS POR UF
+
+Gráfico 1 - Total de vínculos públicos no poder Executivo e nível estadual (1985 - 2021) - total_publico_ee_por_uf - código dos dados e código do gráfico
+Gráfico 3 - Remuneração média de vínculos públicos nos níveis municipal, estadual e federal por Unidade da Federação - rem_media_publico_por_uf_nf - código dos dados e código do gráfico
+Gráfico 4 - Remuneração média de vínculos públicos no poder Executivo e nível estadual por Unidade da Federação - rem_media_publico_ee_por_uf_2021 - código dos dados e código do gráfico
+Gráfico 7 - Variação de vínculos públicos no poder Executivo e nível estadual entre 2004 e 2021 por cor para cada Unidade da Federação - total_var_04_21_publico_ee_por_uf_cor - código dos dados e código do gráfico
+Gráfico 8 - Razão de vínculos de Brancos para cada vínculo de Preto ou Pardo, por Unidade da Federação - total_razao_cor_publico_ee_por_uf - código dos dados e código do gráfico
+Gráfico 9 - Diferença na proporção de pardos e pretos no executivo estadual em relação à proporção encontrada na população em idade ativa na UF - total_razao_publico_ee_cor_pp_x_pia_por_uf_2021 - código dos dados e código do gráfico
+Gráfico 10 - Razão da remuneração média de vínculos públicos no poder Executivo e nível estadual entre vínculos de Brancos e de Pretos ou Pardos, por Unidade da Federação - rem_media_publico_ee_razao_cor_br_x_pp_por_uf - código dos dados e código do gráfico
+Gráfico 11 - Total de vínculos públicos no poder Executivo e nível estadual por sexo - total_publico_ee_por_sexo_uf - código dos dados e código do gráfico
+Gráfico 12 - Variação de vínculos públicos no poder Executivo e nível estadual entre 1985 e 2021 por sexo para cada Unidade da Federação - total_var_85_21_publico_ee_por_uf_sexo - código dos dados e código do gráfico
+Gráfico 13 - Razão da remuneração média de vínculos públicos no poder Executivo e nível estadual entre homens para cada Mulher, por Unidade da Federação - rem_media_publico_ee_razao_sexo_por_uf - código dos dados e código do gráfico
+
+3 - DADOS OCUPACAO
+
+Totais com o ajuste de CBO - total_publico_ee_selecao_cbo_2021
+Tabela 2 - Proporção de pardos e pretos e proporção de mulheres nas dez ocupações com maiores remunerações médias mensais do funcionalismo no Executivo estadual (2021) - total_publico_ee_selecao_cbo_2021_sexo_cor_por_cbo + rem_media_publico_ee_selecao_cbo_2021_por_cbo  - código dos dados e código do gráfico
+Tabela 3 - Proporção de pardos e pretos e proporção de mulheres nas dez ocupações com menores remunerações médias mensais do funcionalismo no Executivo estadual (2021) - total_publico_ee_selecao_cbo_2021_sexo_cor_por_cbo + rem_media_publico_ee_selecao_cbo_2021_por_cbo  - código dos dados e código do gráfico
+Gráfico 14 - Comparação entre a remuneração média e categorias com o cruzamento de sexo e cor ou raça, em ocupações no Executivo estadual (2021)
+
+4 - DADOS SEGREGACAO

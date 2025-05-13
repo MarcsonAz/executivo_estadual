@@ -2,7 +2,7 @@
 
 # medidads do oseas com os nossos dados
 
-dados <- df3;ANO = 1985
+dados <- df13;ANO = 2021
 
 {
 dados <- dados %>%
@@ -233,13 +233,13 @@ dados <- df3;ANO = 2021
   # Função para calcular entropia por ocupação
   calcular_entropia <- function(df) {
     P_ij <- df$n / sum(df$n)
-    entropia <- -sum(P_ij * log2(P_ij), na.rm = TRUE)
+    entropia <- -sum(P_ij * log(P_ij), na.rm = TRUE)
     return(entropia)
   }
   
   # Aplicar a função para cada ocupação
-  entropia_por_ocupacao <- aggregate(n ~ ocupacao, data = dados, FUN = sum)
-  entropia_por_ocupacao$E_i <- sapply(split(dados, dados$ocupacao), calcular_entropia)
+  entropia_por_ocupacao <- aggregate(n ~ unidade, data = dados, FUN = sum)
+  entropia_por_ocupacao$E_i <- sapply(split(dados, dados$unidade), calcular_entropia)
   
   # Calcular a média ponderada da entropia dentro das ocupações
   entropia_media_ocupacoes <- sum((entropia_por_ocupacao$n / sum(entropia_por_ocupacao$n)) * entropia_por_ocupacao$E_i)
@@ -359,7 +359,7 @@ mutual_local(data = dados,
 
 
 dados2 = dados %>% 
-  group_by(ocupacao) %>% 
+  group_by(unidade) %>% 
   mutate(total_ocupacao = sum(n)) %>% 
   ungroup() %>% 
   group_by(grupo) %>% 
@@ -370,26 +370,270 @@ dados2 = dados %>%
          prop_grupo = total_grupo/total,
          prop_grupo_ocupacao = n/total_ocupacao,
          parcela_soma_interna = prop_grupo_ocupacao * logb(prop_grupo_ocupacao/prop_grupo)) %>% 
-  group_by(ocupacao) %>% 
+  group_by(unidade) %>% 
   mutate(soma_interna = sum(parcela_soma_interna)) %>% 
   ungroup() %>% 
   mutate(parcela_m = prop_ocupacao * soma_interna)
 
 (M = sum(dados2$parcela_m))
 
-(H = M / log2(length(unique(dados2$ocupacao))))
+(H = M / log2(length(unique(dados2$unidade))))
+
+
+
+entropy()
+
+sum()
 
 
 
 
+#########################################################
+#########################################################
+#########################################################
+#########################################################
+
+# dados 
+df13 <- arrow::read_parquet('./dados/consulta_segregacao_2021_uf_ocupacao_sexo_cor_06052025.parquet')
+
+query15 <- 
+  "select codigo, titulo
+  from cbo.\"05_ocupacao\""
+cbo <- DBI::dbGetQuery(con, query15)
+
+dados <- df13;ANO = 2021
 
 
 
+### preparacao de dados
+
+# fazer por sexo geral - por sexo para cada UF 
+
+{
+  
+  # adicionar titulo da ocupacao
+  dados <- dados %>% left_join(cbo,by = join_by(cbo2002 == codigo))
+  
+  # remover ocupacoes com baixa variabilidade e quantidade
+  dados2 <- dados %>% filter(!(uf_ipea %in% c(11,23,51,16,21) & total_vinculos_publicos>=10))
+  
+  dados <- dados %>%
+    na.omit() %>% 
+    filter(ano == ANO) %>% 
+    group_by(grupo = genero,unidade = titulo) %>% 
+    summarise(n = sum(total_vinculos_publicos)) %>% 
+    ungroup()
+  
+  
+  ## verificar se tem homem e mulher em cada familia
+  
+  dados_completo <- data.frame(
+    unidade = rep(unique(dados$unidade),each=2),
+    grupo = rep_len(unique(dados$grupo),length.out = 2*length(unique(dados$unidade)))
+  )
+  
+  dados <- dados_completo %>% left_join(dados) %>% 
+    mutate(ocupacao_vazia = ifelse(is.na(n),unidade,NA_character_))
+  
+  ocupacoes_remover <- na.omit(dados$ocupacao_vazia)
+  
+  dados <- dados %>% 
+    filter(!(unidade %in% ocupacoes_remover)) %>% 
+    select(unidade,grupo,n)
+  
+}
+
+
+#library(segregation)
+
+
+mut = mutual_total(data = dados,
+                   group = "grupo",
+                   unit = "unidade",
+                   weight = "n"
+)
+
+diss = dissimilarity(data = dados,
+                     group = "grupo",
+                     unit = "unidade",
+                     weight = "n")
+
+
+# fazer dataframe para armazenar informacao
+
+
+resultados_ano <- data.frame(
+  ano = ANO,
+  m_ = mut$est[1],
+  h_ = mut$est[2],
+  d_ = diss$est[1]
+)
+
+resultados <- rbind(resultados,resultados_ano)
+
+
+# resultados inicial 
+
+resultados <- data.frame(
+  ano = ANO,
+  m_ = mut$est[1],
+  h_ = mut$est[2],
+  d_ = diss$est[1]
+)
+
+
+mut_loc = mutual_local(data = dados,
+                   group = "grupo",
+                   unit = "unidade",
+                   weight = "n"
+)
+
+a = mut_loc %>% as_tibble() %>% mutate(est = round(100*est,4))
 
 
 
+mutual_total <- function(data, group, unit, within = NULL, weight = NULL,
+                         se = FALSE, CI = 0.95, n_bootstrap = 100, base = exp(1)) {
+  stopifnot(CI > 0 & CI < 1)
+  d <- prepare_data(data, group, unit, weight, within)
+  
+  if (is.null(within)) {
+    ret <- mutual_total_compute(d, group, unit, base)
+  } else {
+    ret <- mutual_total_within_compute(d, group, unit, within, base)
+  }
+  
+  if (se == TRUE) {
+    vars <- attr(d, "vars")
+    n_total <- sum(d[["freq"]])
+    
+    if (all.equal(n_total, round(n_total)) == TRUE) {
+      message(paste0(n_bootstrap, " bootstrap iterations on ", n_total, " observations"))
+    } else {
+      stop(paste0(
+        "bootstrap with a total sample size that is not an integer is not allowed, ",
+        "maybe scale your weights?"
+      ))
+    }
+    # draw from a multinomial with weights specified by the cell counts
+    draws <- stats::rmultinom(n_bootstrap, n_total, d[["freq"]] / n_total)
+    
+    boot_ret <- lapply(seq_len(n_bootstrap), function(i) {
+      if (i %% 5 == 0) update_log(bs_n = i, bs_max = n_bootstrap)
+      d[, freq := as.double(draws[, i])]
+      
+      if (is.null(within)) {
+        mutual_total_compute(d[freq > 0], group, unit, base)
+      } else {
+        mutual_total_within_compute(d[freq > 0], group, unit, within, base)
+      }
+    })
+    close_log()
+    boot_ret <- rbindlist(boot_ret)
+    ret <- bootstrap_summary(ret, boot_ret, "stat", CI)
+    setattr(ret, "bootstrap", boot_ret)
+  }
+  ret
+}
 
 
+mutual_total_compute <- function(data, group, unit, base) {
+  n_total <- sum(d[, freq])
+  data[, n_unit := sum(freq), by = unit]
+  data[, n_group := sum(freq), by = group]
+  data[, `:=`(p = freq / n_total, p_exp = n_group * n_unit / (n_total^2))]
+  
+  # calculate M
+  M <- data[p > 0, sum(p * log(p / p_exp, base = base))]
+  
+  # calculate H
+  p <- data[, list(p = first(n_group / n_total)), by = group][["p"]]
+  entropy_group <- sum(p * log(1 / p, base))
+  H <- M / entropy_group
+  
+  data.table(
+    stat = c("M", "H"), est = c(M, H),
+    stringsAsFactors = FALSE
+  )
+}
+
+prepare_data <- function(data, group, unit, weight, within = NULL) {
+  if ("data.frame" %in% class(data)) {
+    if (nrow(data) == 0) {
+      stop("data.frame is empty")
+    }
+    test_vars <- c(group, unit, weight, within)
+    test_vars <- test_vars[!test_vars %in% names(data)]
+    if (length(test_vars) > 0) {
+      test_vars <- paste0(test_vars, collapse = ", ")
+      stop(paste0("variable(s) ", test_vars, " not in data.frame"))
+    }
+  } else {
+    stop("not a data.frame")
+  }
+  vars <- c(group, unit)
+  
+  # create a copy
+  data <- as.data.table(data)
+  
+  # check whether there is variation
+  n_groups <- nrow(data[, .N, by = group])
+  n_units <- nrow(data[, .N, by = unit])
+  if (n_groups == 1) stop("Cannot compute segregation: the group variable is constant")
+  if (n_units == 1) stop("Cannot compute segregation: the unit variable is constant")
+  
+  # use provided weight or weight of 1
+  weight_no_conflict <- weight
+  if (!is.null(weight_no_conflict)) {
+    if (weight_no_conflict == "weight") {
+      data[, freq := as.double(weight)]
+    } else {
+      data[, freq := as.double(get(weight_no_conflict))]
+    }
+  } else {
+    data[, freq := 1]
+  }
+  
+  if (!is.null(within)) {
+    vars <- c(vars, within)
+  }
+  
+  # drop unused factor levels - these can lead to problems downstream
+  for (var in vars) {
+    if (is.factor(data[[var]])) {
+      data[[var]] <- droplevels(data[[var]])
+    }
+  }
+  
+  # collapse on vars, and select only positive weights
+  data <- data[freq > 0, list(freq = sum(freq)), by = vars]
+  setattr(data, "vars", vars)
+  setkey(data, NULL)
+  data
+}
+
+
+# Aplicar a função para cada ocupação
+entropia_por_ocupacao <- aggregate(n ~ unidade, data = dados, FUN = sum)
+entropia_por_ocupacao$E_i <- sapply(split(dados, dados$unidade), calcular_entropia)
+
+entropia_por_ocupacao$prop <- entropia_por_ocupacao$n/sum(entropia_por_ocupacao$n)
+
+# Aplicar a função para cada ocupação
+entropia_por_sexo <- aggregate(n ~ grupo, data = dados, FUN = sum)
+entropia_por_sexo$E_i <- sapply(split(dados, dados$grupo), calcular_entropia)
+
+
+df = dados %>% 
+  left_join(entropia_por_ocupacao %>% select(unidade, entropia_unidade = E_i)) %>% 
+  left_join(entropia_por_sexo %>% select(grupo, entropia_grupo = E_i))
+
+df$P_j = as.numeric(df$P_j)
+df$entropia_unidade = as.numeric(df$entropia_unidade)
+df$entropia_grupo = as.numeric(df$entropia_grupo)
+
+df = df %>% 
+  mutate(parcela_m = P_j * (entropia_grupo - entropia_por_ocupacao))
 
 
 

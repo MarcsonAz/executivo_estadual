@@ -177,9 +177,18 @@ query14 <- paste(
         END::double precision) AS rem_soma_vinculos_publicos_controlado
     FROM vinculos_v6.tb_vinculos_2021 v
     JOIN rfb.tb_ipea_rfb_publicos r ON r.cnpj_texto::text = v.id_estab::text
+    LEFT JOIN site_adeb_v3.tb_cpf_publico_raca_cor_v2_2004_2021 raca ON raca.cpf = v.cpf::text
     LEFT JOIN mvw_rendimento_publico_corte corte ON corte.ano = v.ano AND corte.poder::text = r.poder::text AND corte.esfera::text = r.esfera::text
     WHERE r.poder::text = 'E'::text AND r.esfera::text = 'E'::text
-    GROUP BY v.ano, v.uf_ipea, v.genero ,v.cbo2002
+    GROUP BY v.ano,
+    v.uf_ipea,
+    raca.raca_script_r_resultado,
+    v.genero,
+    case
+    	when v.genero = 1 then 'Homem'
+    	when v.genero = 2 then 'Mulher'
+    end,    
+    v.cbo2002
     ORDER BY v.ano DESC")
 
 df14 <- DBI::dbGetQuery(con, query14)
@@ -534,7 +543,7 @@ tab_03 = df14 %>%
   summarise(total_uf_cbo_sexo = sum(total_vinculos_publicos)) %>% 
   mutate(total_uf_cbo = sum(total_uf_cbo_sexo)) %>%
   ungroup() %>% 
-  filter(sexo_descricao == "Mulher") %>% 
+  #filter(sexo_descricao == "Mulher") %>% 
   mutate(prop_sexo_mulher = round(100*total_uf_cbo_sexo/total_uf_cbo,4))
 
 
@@ -559,14 +568,14 @@ zz = tt %>% group_by(uf_ipea) %>% summarise(t=sum(total_vinculos))
 a = tt %>% group_by(uf_ipea) %>% 
   summarise(cor_pp_rem = cor(prop_cor_pre_par,rem_media))
 
-ggplot(a, aes(x=uf_ipea , y=cor_pp_rem))+ ggplot2::geom_col()
+ggplot2::ggplot(a, aes(x=uf_ipea , y=cor_pp_rem))+ ggplot2::geom_col()
 
 round(mean(a$cor_pp_rem),2)
 
 a = tt %>% group_by(uf_ipea) %>% 
   summarise(cor_mul_rem = cor(prop_sexo_mulher,rem_media))
 
-ggplot(a, aes(x=uf_ipea , y=cor_mul_rem))+ ggplot2::geom_col()
+ggplot2::ggplot(a, aes(x=uf_ipea , y=cor_mul_rem))+ ggplot2::geom_col()
 
 round(mean(a$cor_mul_rem),2)
 
