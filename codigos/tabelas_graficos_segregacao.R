@@ -34,4 +34,27 @@ g1/g2/g3
 
 
 
+#### grafico barrar por UF diss
 
+res %>% ggplot(aes(x=uf,y=d_)) + 
+  geom_col() + ylim(c(0,0.55)) +
+  labs(title = "Dissimilaridade de cor (PP x BR) por UF")
+
+res %>% ggplot(aes(x=uf,y=d_)) + 
+  geom_col() + ylim(c(0,0.55)) +
+  labs(title = "Dissimilaridade de sexo por UF")
+
+
+#### grafico barrar por UF IM normalizado H
+
+res %>% ggplot(aes(x=uf,y=h_)) + 
+  geom_col() + ylim(c(0,0.3)) +
+  labs(title = "Informação mútua normalizado de cor (PP x BR) por UF")
+
+res %>% ggplot(aes(x=uf,y=h_)) + 
+  geom_col() + ylim(c(0,0.3)) +
+  labs(title = "Informação mútua normalizado de sexo por UF")
+
+res %>% ggplot(aes(x=uf,y=h_)) + 
+  geom_col() + ylim(c(0,0.3)) +
+  labs(title = "Informação mútua normalizado de sexo e cor por UF")
