@@ -1,0 +1,75 @@
+###
+Dados para gráficos e tabelas, no texto ou apêndice.
+
+Total vínculos EE por ano e UF
+
+Remuneração média mensal de vínculos no público por ano e nível federativo
+
+Remuneração média mensal de vínculos no público por ano e nível federativo, por UF - revisar (subtítulo)
+
+Remuneração média mensal de vínculos EE em 2021 por UF
+
+Remuneração média mensal de vínculos EE entre os quintos de remuneração por ano
+
+Média, desvio padrão e coeficiente de variação da remuneração mensal de vínculos EE por anos selecionados (1985,1995,2005,2015,2021)
+
+Razão entre o nono e primeiro decis da remuneração mensal de vínculos EE por ano
+
+Variação de vínculos públicos EE entre 2004 e 2021 (valor 2021 - valor 2004) por cor e UF
+
+Razão de vínculos de Brancos para cada vínculo de Preto ou Pardo, por ano e UF
+
+IBR para cada cor por UF (2021) (Pardos no texto e Brancos e Pretos no apêndice)
+
+Razão entre a remuneração média mensal de vínculos com cor Branca e com cor Preta ou Parda no EE por ano e UF
+
+Total vínculos EE por UF, sexo, ano
+
+Variação de vínculos públicos EE entre 2004 e 2021 (valor 2021 - valor 2004) por sexo e UF
+
+Razão entre a remuneração média mensal de vínculos de Homens e de Mulheres no EE por ano e UF
+
+Entre o filtro de ocupações - Total, rem média, proporção de mulheres e de pretos ou pardos por ocupações de 2021 no EE (no texto: duas tabelas por ocupação ordenadas entre as 10 maiores e menores remunerações médias, mais uma no apêndice)
+
+-- Entre o filtro de ocupações - Segregação - EE - BRASIL
+
+Boxplot da remuneração média de ocupações (2021), por cruzamento de sexo e cor ou raça
+
+Diss, inf mututa, inf mutua norm. por sexo e ocupação - 2021
+
+Diss, inf mututa, inf mutua norm. por cor e ocupação - 2021
+
+Diss, inf mututa, inf mutua norm. por cor (Preta ou Parda x Não Preta ou Parda) e ocupação - 2021
+
+Diss, inf mututa, inf mutua norm. por Sexo e cor (Homem - Preta ou Parda x Homem - Não Preta ou Parda x Mulher - Preta ou Parda x Mulher - Não Preta ou Parda) e ocupação - 2021
+
+-- Entre o filtro de ocupações - Segregação - EE - UF
+
+Diss, inf mututa, inf mutua norm. por sexo e ocupação - 2021
+
+Diss, inf mututa, inf mutua norm. por cor e ocupação - 2021
+
+Diss, inf mututa, inf mutua norm. por cor (Preta ou Parda x Não Preta ou Parda) e ocupação - 2021
+
+Diss, inf mututa, inf mutua norm. por Sexo e cor (Homem - Preta ou Parda x Homem - Não Preta ou Parda x Mulher - Preta ou Parda x Mulher - Não Preta ou Parda) e ocupação - 2021
+
+Variação absoluta de vínculos de trabalho no executivo estadual, por cor (2004-2021)
+
+Média, desvio padrão e coeficiente de variação da remuneração mensal entre os quintos de vínculos EE por anos selecionados 2021
+
+Total vínculos EE por UF, cor, ano
+
+População total ocupada nas UF, por cor e proporção de brancos e de negros (quarto trimestre de 2022)
+
+Proporção de pardos e pretos nas dez ocupações com maiores totais de vínculos do funcionalismo no Executivo estadual (2021)
+
+-- Entre o filtro de ocupações - EE - UF 
+Comparação entre a remuneração média e a proporção de pretos ou pardos em ocupações no Executivo estadual (2021)
+
+Comparação entre a remuneração média e a proporção de mulheres em ocupações no Executivo estadual (2021)
+
+
+
+
+
+

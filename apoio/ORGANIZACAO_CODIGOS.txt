@@ -1,0 +1,27 @@
+###
+Códigos de 
+
+gerar mvw no banco
+apoio gerar mvw no banco
+
+consultar mvw e gerar planilhas de saída
+
+
+gerar gráficos
+
+- total brasil
+
+- total por UF
+
+- remuneração brasil
+
+- remuneração uf
+
+- ocupação geral
+
+- ocupação segregação
+
+
+
+
+
