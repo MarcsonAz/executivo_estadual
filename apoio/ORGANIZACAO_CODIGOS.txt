@@ -5,6 +5,8 @@ gerar mvw no banco
 apoio gerar mvw no banco
 
 consultar mvw e gerar planilhas de saída
+ - esse código é muito grande e gera tudo em um único arquivo,
+quero separar nos subgrupos da parte de geração de gráficos.
 
 
 gerar gráficos

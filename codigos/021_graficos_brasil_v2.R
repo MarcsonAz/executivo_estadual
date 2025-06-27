@@ -381,7 +381,7 @@ ggsave(filename = "./graficos/brasil_remuneracao_media_mediana.png", device = "p
 
 ggplot() +
   geom_line(data = data2, aes(x=ano, y=value, color=categoria),
-            linewidth = 1.5) +
+            linewidth = 1.1) +
   
   #scale_color_discrete() + 
   scale_color_discrete(label=c("Federal","Estadual","Municipal")) +
@@ -397,19 +397,20 @@ ggplot() +
   theme(
     legend.position = "top",
     legend.title = element_blank(),
+    legend.text = element_text(size = 6),
     
     axis.title.x = element_blank(),
     axis.text.x = element_text(size = 6),
     
-    title = element_text(size = 10),
-    plot.title = element_text(size = 8),
-    plot.subtitle = element_text(size = 6),
+    title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
     
-    axis.title.y = element_text(size = 8),
+    axis.title.y = element_text(size = 6),
     axis.text.y = element_text(size = 6),
     axis.ticks.y = element_blank(),
     
-    strip.text = element_text(size = 8),
+    strip.text = element_text(size = 6),
     plot.caption = element_text(size = 6)
   )
 
@@ -1180,6 +1181,69 @@ ggsave(filename = "./graficos/uf_total_cor_prop_branca.png", device = "png",
        width = 16, height = 10, units = "in")
 
 
+# GRAFICO xx - texto 3 - remuneracao media UF nf ####################################
+
+data = df11_2 ## codigo: 01_tabulacao_dados.R - linha 129
+
+## ajuste
+data3 = data %>% 
+  rename(Federal = rem_media_federal_total,
+         Estadual = rem_media_estadual_total,
+         Municipal = rem_media_municipal_total) %>% 
+  pivot_longer(!c(ano,codigo,uf), names_to = "categoria", values_to= "valor") %>% 
+  mutate(categoria = factor(categoria,
+                            levels = c('Federal','Estadual','Municipal'),
+                            labels = c('Federal','Estadual','Municipal')),
+         uf2 = factor(codigo,
+                     levels = data$codigo,
+                     labels = data$uf))
+
+
+# 
+# apoio =  base_completa$total_uf_sexo %>% 
+#   select(codigo_uf,sigla_uf) %>%
+#   distinct() %>% 
+#   na.omit()
+# 
+# data = base_completa$rem_media_brasil_nf
+# 
+# data = left_join(data,apoio, by = join_by(uf == codigo_uf)) %>% 
+#   na.omit() %>% 
+#   mutate(codigo_uf = factor(uf,
+#                             levels = siglas$codigo,
+#                             labels = siglas$sigla))
+
+ggplot() +
+  geom_line(data = data3,
+            aes(x=ano, y=valor, color=categoria)) +
+  facet_wrap(~uf2,ncol=4) +
+  
+  labs(caption = 'Fonte: Rais. Nota: valores em setembro de 2023.') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  #scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                   limits = c(0,8.3e5),
+  #                  breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "top",
+    legend.text = element_text(size = 14),
+    
+    #plot.title = element_text(size = 40),
+    #plot.subtitle = element_text(size = 30),
+    axis.title.y = element_text(size = 12),
+    axis.text.x  = element_text(size = 10),
+    axis.text.y = element_text(size = 8),
+    strip.text = element_text(size = 14),
+    plot.caption = element_text(size = 10))
+
+ggsave(filename = "./graficos/uf_rem_media_nivel_federativo.png", device = "png",
+       width = 16, height = 10, units = "in")
+
+ggsave(filename = "./graficos/uf_rem_media_nivel_federativo.png",
+       plot = last_plot(), width = 9.10, height = 11.10, units = "in", dpi = 300)
 
 
 # GRAFICO 16 - remuneracao media UF sexo ####################################

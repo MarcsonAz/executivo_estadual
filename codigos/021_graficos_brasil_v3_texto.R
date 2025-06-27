@@ -2,7 +2,7 @@
 
 ###############################################
 # OBJETIVO                                    #
-# COLETA DE DADOS E EXPORTACAO EM PLANILHA    #
+# GRAFICOS BRASIL PARA O TEXTO                #
 #                                             #
 ###############################################
 
@@ -21,10 +21,10 @@ pacman::p_load(
 ## 
 
 # dados
-{ 
 source('./apoio/dfs_para_relatorio.R')
 
-data = base_completa$total_brasil
+{
+  data = base_completa$total_brasil
 
 data = data %>% 
   mutate(total = as.numeric(vinculos_executivo_estadual)) %>% 
@@ -70,6 +70,326 @@ texto_caption = paste0(
     round(variacao$variacao_relativa[5]),"%.")
 
 }
+
+
+
+####
+#### 
+
+# Gráfico 2 - Remuneração média de vínculos públicos nos níveis federal, estadual e municipal (1985 - 2021)
+
+# Gráfico 5 - Remuneração média entre os quintos de remuneração de vínculos públicos no poder Executivo e nível estadual (1985 - 2021)
+
+# Gráfico 6 - Razão entre o nono e o primeiro decis de remuneração de vínculos públicos no poder Executivo e nível estadual (1985 - 2021) 
+
+# Gráfico A1. Variação absoluta de vínculos de trabalho no executivo estadual, por cor (2004-2021)
+
+# Tabela A1 - Estatísticas da remuneração média mensal, por quinto do funcionalismo no Executivo estadual (2021)
+
+####
+####
+
+
+# Gráfico 2 - #####################################################################
+
+### 1 - tratamento
+data <- base_completa$rem_media_brasil_nf %>% 
+  rename(Federal = remuneracao_media_federal,
+         Estadual = remuneracao_media_estadual,
+         Municipal = remuneracao_media_municipal) %>% 
+  select(-`...1`) %>% 
+  pivot_longer(cols = Federal:Municipal,
+               names_to = 'categoria') %>% 
+  mutate(categoria = factor(categoria,
+                            levels = c("Federal", "Estadual","Municipal"),
+                            labels = c("Federal", "Estadual","Municipal")))
+
+# f - BDB542
+# e - 36809A
+# m - 9A3636
+cores_nf = c('#BDB542',"#36809A","#9A3636")
+
+### 2 - grafico
+ggplot() +
+  geom_line(data = data, aes(x=ano, y=value, color=categoria),
+            linewidth = 0.9) +
+  scale_color_manual(values=c("Federal" = cores_nf[1],
+                              "Estadual" = cores_nf[2] ,
+                              "Municipal" = cores_nf[3]),
+                     labels = c("Federal", "Estadual", "Municipal")) +
+  labs(caption = 'Fonte: Rais. Nota: valores em setembro de 2023') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  scale_y_continuous(
+    limits = c(0,14000),
+    breaks = seq(0,14000,2000)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10, margin = margin(t=0, b=0, unit="pt"), color="#141414"),
+    
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 10, color="#141414"),
+    
+    title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    
+    axis.title.y = element_text(size = 10,vjust = -2),
+    axis.text.y = element_text(size = 10, margin = margin(l = 0), color="#141414"),
+    axis.ticks.y = element_blank(),
+    
+    #strip.text = element_text(size = 6, color="#141414"),
+    plot.caption = element_text(size = 10,vjust = 0, color="#141414")
+  )
+
+#ggsave(filename = "./graficos/brasil_remuneracao_media_nivelfederativo.png", device = "png",
+ #      width = 10, height = 6, units = "cm")
+
+ggsave(filename = "./graficos/brasil_remuneracao_media_nivelfederativo.png",
+       plot = last_plot(), width = 7.44, height = 4.68, units = "in", dpi = 300)
+
+
+
+# Gráfico 5 - #####################################################################
+
+### 1 - tratamento
+data = base_completa$rem_media_quintos_brasil
+
+# para grafico 14
+data = data %>%  
+  select(!...1) %>% 
+  pivot_longer(!ano,
+               names_to = 'categoria',
+               values_to = 'remuneracao'
+  ) %>% 
+  filter(
+    categoria != 'remuneracao_razao_media_quintos_5_1_executivo_estadual') %>% 
+  mutate(categoria = factor(categoria,
+                            levels= c(
+                              'remuneracao_media_quintos_1_executivo_estadual',
+                              'remuneracao_media_quintos_2_executivo_estadual',
+                              'remuneracao_media_quintos_3_executivo_estadual',
+                              'remuneracao_media_quintos_4_executivo_estadual',
+                              'remuneracao_media_quintos_5_executivo_estadual'
+                            ),
+                            labels = c(
+                              'Média até percentil 20',
+                              'Média entre 20 e 40',
+                              'Média entre 40 e 60',
+                              'Média entre 60 e 80',
+                              'Média acima do 80'
+                            ))) %>% 
+  na.omit()
+
+# 2 - grafico
+ggplot(data, aes(ano,remuneracao , color= categoria)) + 
+  geom_line() +
+  scale_color_viridis(discrete=TRUE, option = "D",end = 0.8, direction = -1) +
+  
+  theme_ipea() +
+  labs(caption = 'Fonte: Rais. Nota: valores em setembro de 2023') +
+  ylab('Remuneração em reais') +
+  scale_y_continuous(limits = c(0,15e3), breaks = seq(0,15e3,2e3)) + 
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 8, margin = margin(t=0, b=0, unit="pt"), color="#141414"),
+    
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 10, color="#141414"),
+    
+    title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    
+    axis.title.y = element_text(size = 10,vjust = -2),
+    axis.text.y = element_text(size = 10, margin = margin(l = 0), color="#141414"),
+    axis.ticks.y = element_blank(),
+    
+    #strip.text = element_text(size = 6, color="#141414"),
+    plot.caption = element_text(size = 10,vjust = 0, color="#141414")
+  )
+
+
+#ggsave(filename = "./graficos/brasil_remuneracao_media_quintos_linha.png", device = "png",
+ #      width = 10, height = 6, units = "cm")
+
+ggsave(filename = "./graficos/brasil_remuneracao_media_quintos_linha.png",
+       plot = last_plot(), width = 7.44, height = 4.68, units = "in", dpi = 300)
+
+
+# 3-  tabela auxiliar - # variacao nos dados
+
+df_cv_rem <- data %>% 
+  group_by(categoria) %>% 
+  summarise(desvio_padrao = sd(remuneracao),
+            media = mean(remuneracao)) %>% 
+  ungroup() %>% 
+  mutate(cv = round(desvio_padrao/media,3))
+
+
+
+
+# Gráfico 6 - #####################################################################
+
+### 1 - tratamento
+data = base_completa$rem_decil_brasil
+
+data = data %>% 
+  select(!...1) %>% 
+  pivot_longer(!ano,
+               names_to = 'categoria',
+               values_to = 'remuneracao'
+  ) %>% 
+  filter(
+    categoria == 'remuneracao_razao_decil_9_1_executivo_estadual')
+
+# 2 - grafico
+ggplot(data, aes(ano,remuneracao)) + 
+  geom_line() +
+  #scale_color_viridis(discrete=TRUE, option = "D",end = 0.8, direction = -1) +
+  
+  theme_ipea() +
+  labs(caption = 'Fonte: Rais. Nota: valores em setembro de 2023') +
+  ylab('Razão entre decis de remuneração') +
+  scale_y_continuous(limits = c(0,10), breaks = seq(0,10,1)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-5))) +
+  theme(
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 8, margin = margin(t=0, b=0, unit="pt"), color="#141414"),
+    
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 10, color="#141414"),
+    
+    title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    
+    axis.title.y = element_text(size = 8, margin = margin(l = 0), color="#141414"),
+    axis.text.y = element_text(size = 10, margin = margin(l = 0), color="#141414"),
+    axis.ticks.y = element_blank(),
+    
+    #strip.text = element_text(size = 6, color="#141414"),
+    plot.caption = element_text(size = 10,vjust = 0, color="#141414")
+  )
+
+
+ggsave(filename = "./graficos/brasil_remuneracao_decis_razao_9_1.png",
+       plot = last_plot(), width = 7.44, height = 4.68, units = "in", dpi = 300)
+
+
+
+## A1
+data = base_completa$total_brasil_cor
+
+data = data %>% 
+  mutate(total = as.numeric(vinculos_executivo_estadual),
+         cor_descricao = as.factor(cor_descricao)) %>% 
+  select(ano, cor, cor_descricao, total) %>% 
+  filter(ano %in% c(2004,2021)) %>% 
+  arrange(cor,ano) %>% 
+  mutate(
+    lag = lag(total)) %>% 
+  filter(ano == 2021) %>% 
+  mutate(
+    variacao_absoluta = total - lag,
+    descricao_periodo = rep("2004-2021",5),
+    variacao_relativa = round(((total/lag)-1)*100,1)
+  ) %>% 
+  na.omit() %>% 
+  select(
+    descricao_periodo,cor,cor_descricao,variacao_absoluta,variacao_relativa)
+
+texto_caption = paste0(
+  'Fonte: Rais. Nota: a variação relativa para para os respectivos períodos são: ',
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Amarela']),"%, ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Branca']),"%, ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Indígena']),"%, ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Parda']),"% e ",
+  round(variacao3$variacao_relativa[variacao3$cor_descricao=='Preta']),"%.")
+
+ggplot(data,
+       aes(x=cor_descricao, y=variacao_absoluta,fill=cor_descricao)) +
+  geom_col() +
+  scale_color_ipea() + 
+  scale_fill_manual(values = c('#FDE725','#7AD151','#22A884','#2A788E','#414487')) +
+  labs(caption = texto_caption) +
+  ylab('Variação de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
+                     limits = c(-100e3,30e3),
+                     breaks = seq(-100e3,30e3,20e3)) +
+  theme(
+    legend.position = "none",
+   
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(size = 10, color="#141414"),
+    
+    title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    
+    axis.title.y = element_text(size = 8, margin = margin(l = 0), color="#141414"),
+    axis.text.y = element_text(size = 10, margin = margin(l = 0), color="#141414"),
+    axis.ticks.y = element_blank(),
+    
+    #strip.text = element_text(size = 6, color="#141414"),
+    plot.caption = element_text(size = 10,vjust = 0, color="#141414")
+  )
+
+ggsave(filename = "./graficos/brasil_total_cor_variacao.png",
+       plot = last_plot(), width = 7.44, height = 4.68, units = "in", dpi = 300)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#######################################
+#######################################
+#######################################
+
+#######################################
+#######################################
+#######################################
+
+#######################################
+#######################################
+#######################################
+
+
+
+
+
+
+
+
+
 # GRAFICO 1 - TOTAL #######################################
 
 ggplot() +
@@ -379,9 +699,10 @@ ggsave(filename = "./graficos/brasil_remuneracao_media_mediana.png", device = "p
 
 # GRAFICO 6.1 - remuneracao media brasil por nivel federativo ###############
 
+
 ggplot() +
   geom_line(data = data2, aes(x=ano, y=value, color=categoria),
-            linewidth = 1.5) +
+            linewidth = 1.1) +
   
   #scale_color_discrete() + 
   scale_color_discrete(label=c("Federal","Estadual","Municipal")) +
@@ -397,25 +718,30 @@ ggplot() +
   theme(
     legend.position = "top",
     legend.title = element_blank(),
+    legend.text = element_text(size = 6),
     
     axis.title.x = element_blank(),
     axis.text.x = element_text(size = 6),
     
-    title = element_text(size = 10),
-    plot.title = element_text(size = 8),
-    plot.subtitle = element_text(size = 6),
+    title = element_blank(),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
     
-    axis.title.y = element_text(size = 8),
+    axis.title.y = element_text(size = 6),
     axis.text.y = element_text(size = 6),
     axis.ticks.y = element_blank(),
     
-    strip.text = element_text(size = 8),
+    strip.text = element_text(size = 6),
     plot.caption = element_text(size = 6)
   )
 
 ggsave(filename = "./graficos/brasil_remuneracao_media_nivelfederativo.png", device = "png",
        width = 10, height = 6, units = "cm")
 
+
+
+
+###########################
 
 # dados - decil
 data = base_completa$rem_decil_brasil
@@ -536,7 +862,7 @@ ggsave(filename = "./graficos/brasil_remuneracao_decis_linha.png", device = "png
 
 # GRAFICO XXX - novo - remuneracao media decil brasil linhas #################################
 
-data = base_completa$
+#data = base_completa$
 
 ggplot(data, aes(ano,remuneracao , color= categoria)) + 
   geom_line() +
@@ -630,6 +956,11 @@ ggplot(data, aes(ano,remuneracao , color= categoria)) +
     axis.title.y = element_blank(),
     #legend.position = "top",
     legend.title = element_blank()) 
+
+
+
+
+
 
 # variacao nos dados
 
@@ -1180,6 +1511,69 @@ ggsave(filename = "./graficos/uf_total_cor_prop_branca.png", device = "png",
        width = 16, height = 10, units = "in")
 
 
+# GRAFICO xx - texto 3 - remuneracao media UF nf ####################################
+
+data = df11_2 ## codigo: 01_tabulacao_dados.R - linha 129
+
+## ajuste
+data3 = data %>% 
+  rename(Federal = rem_media_federal_total,
+         Estadual = rem_media_estadual_total,
+         Municipal = rem_media_municipal_total) %>% 
+  pivot_longer(!c(ano,codigo,uf), names_to = "categoria", values_to= "valor") %>% 
+  mutate(categoria = factor(categoria,
+                            levels = c('Federal','Estadual','Municipal'),
+                            labels = c('Federal','Estadual','Municipal')),
+         uf2 = factor(codigo,
+                     levels = data$codigo,
+                     labels = data$uf))
+
+
+# 
+# apoio =  base_completa$total_uf_sexo %>% 
+#   select(codigo_uf,sigla_uf) %>%
+#   distinct() %>% 
+#   na.omit()
+# 
+# data = base_completa$rem_media_brasil_nf
+# 
+# data = left_join(data,apoio, by = join_by(uf == codigo_uf)) %>% 
+#   na.omit() %>% 
+#   mutate(codigo_uf = factor(uf,
+#                             levels = siglas$codigo,
+#                             labels = siglas$sigla))
+
+ggplot() +
+  geom_line(data = data3,
+            aes(x=ano, y=valor, color=categoria)) +
+  facet_wrap(~uf2,ncol=4) +
+  
+  labs(caption = 'Fonte: Rais. Nota: valores em setembro de 2023.') +
+  ylab('Remuneração em reais') +
+  theme_ipea() +
+  #scale_y_continuous(labels = unit_format(unit = "", scale = 1e-3),
+  #                   limits = c(0,8.3e5),
+  #                  breaks = seq(0,8e5,2e5)) +
+  scale_x_continuous(limits = c(1984,2022), breaks = sort(seq(2021,1985,-10))) +
+  theme(
+    axis.title.x = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "top",
+    legend.text = element_text(size = 14),
+    
+    #plot.title = element_text(size = 40),
+    #plot.subtitle = element_text(size = 30),
+    axis.title.y = element_text(size = 12),
+    axis.text.x  = element_text(size = 10),
+    axis.text.y = element_text(size = 8),
+    strip.text = element_text(size = 14),
+    plot.caption = element_text(size = 10))
+
+ggsave(filename = "./graficos/uf_rem_media_nivel_federativo.png", device = "png",
+       width = 16, height = 10, units = "in")
+
+ggsave(filename = "./graficos/uf_rem_media_nivel_federativo.png",
+       plot = last_plot(), width = 9.10, height = 11.10, units = "in", dpi = 300)
 
 
 # GRAFICO 16 - remuneracao media UF sexo ####################################

@@ -126,6 +126,16 @@ query11 <- paste(
 
 df11 <- DBI::dbGetQuery(con, query11)
 
+query11_2 <- paste(
+  "SELECT ano,codigo,uf,",
+  "rem_media_federal_total,",
+  "rem_media_estadual_total,",
+  "rem_media_municipal_total",
+  "FROM vinculos_v6_resumos.uf_v12_esfera_e_poder",
+  "WHERE codigo is not null")
+
+df11_2 <- DBI::dbGetQuery(con, query11_2)
+
 query12 <- paste(
   "select ano, codigo, uf, rem_media_federal_total, rem_media_estadual_total, rem_media_municipal_total
   FROM vinculos_v6_resumos.uf_v12_esfera_e_poder")

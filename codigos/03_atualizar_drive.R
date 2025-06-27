@@ -9,7 +9,7 @@
 arquivos <- fs::dir_ls('./graficos',glob = '*.png')
 
 # lista de planilhas
-arquivos_dados <- fs::dir_ls('./dados',glob = '*.xlsx')
+arquivos_dados <- fs::dir_ls('./dados',glob = '*.csv')
 
 
 hoje = as.Date(Sys.time())
