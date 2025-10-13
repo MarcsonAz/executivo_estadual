@@ -47,7 +47,7 @@ query3 <- paste(
   "SELECT ano, sexo, sexo_descricao, substring(cbo_base,1,4) as cbo_familia,
 count(*) as total_vinculos
 FROM vinculos_v6_auxiliar.v_publico
-where ano in (1985,1995,2004,2010,2015,2021) and nivel_federativo = 'Federal'
+where ano in (1985,1995,2005,2010,2015,2021) and nivel_federativo = 'Federal'
 group by ano, sexo, sexo_descricao, substring(cbo_base,1,4)")
 
 df3 <- DBI::dbGetQuery(con, query3)
@@ -61,11 +61,11 @@ query4 <- paste(
 count(*) as total_vinculos
 FROM vinculos_v6_auxiliar.v_publico
 where ano in (1985,1995,2005,2010,2015,2021) 
-group by ano, sexo, sexo_descricao, substring(cbo_base,1,4)")
+group by ano, sexo, sexo_descricao, cor_raca, cor_raca_descricao, substring(cbo_base,1,4)")
 
 df4 <- DBI::dbGetQuery(con, query4)
 
-arrow::write_parquet(df4,'./dados/consulta_segregacao_familia_sexo_cor_06052025.parquet')
+arrow::write_parquet(df4,'./dados/consulta_segregacao_familia_sexo_cor_16072025.parquet')
 
 ## por Executivo Estadual - UF - ocupacao - sexo - cor - 2021
 query13 <- paste(
@@ -89,6 +89,7 @@ query13 <- paste(
 df13 <- DBI::dbGetQuery(con, query13)
 
 arrow::write_parquet(df13,'./dados/consulta_segregacao_2021_uf_ocupacao_sexo_cor_06052025.parquet')
+adf13 <- arrow::read_parquet('./dados/consulta_segregacao_2021_uf_ocupacao_sexo_cor_06052025.parquet')
 
 query15 <- 
   "select codigo, titulo

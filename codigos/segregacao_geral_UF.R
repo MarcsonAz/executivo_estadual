@@ -268,15 +268,15 @@ dados <- df3;ANO = 2021
 
 
 
-dados <- df3;ANO = 2021
+dados <- df3;ANO = 1985
 
 ### preparacao de dados
 {
   dados <- dados %>%
     na.omit() %>% 
     filter(ano == ANO) %>% 
-    group_by(ano, grupo = sexo_descricao,ocupacao = cbo_familia) %>% 
-    summarise(n = sum(total_vinculos)) %>% 
+    group_by(ano, grupo = sexo_descricao,ocupacao = cbo2002) %>% 
+    summarise(n = sum(total_vinculos_publicos)) %>% 
     ungroup()
   
   
@@ -337,19 +337,161 @@ resultados <- data.frame(
 )
 
 
-mutual_local(data = dados,
-              group = "grupo",
-              unit = "ocupacao",
-              weight = "n",
-              wide = TRUE
+
+
+################################################################
+################################################################
+################################################################
+# DADOS CALCULADOS PARA O BAPI
+
+# id e imn
+
+# dados do codigo - consultas_segregacao.R
+# df14 = arrow::read_parquet('./dados/consulta_segregacao_familia_sexo_cor_16072025.parquet')
+
+library(segregation)
+dados <- df14;ANO <- 2021; VARIAVEL = 'COR_SEXO'
+
+### preparacao de dados
+{
+  if(VARIAVEL == 'SEXO'){
+    dados <- dados %>%
+      filter(ano == ANO & !(is.na(sexo_descricao) | is.na(cbo_familia))) %>% 
+      group_by(ano, grupo = sexo_descricao,ocupacao = cbo_familia) %>% 
+      summarise(n = sum(total_vinculos)) %>% 
+      ungroup()
+    qtd_categorias = dados$grupo %>% unique() %>% length()
+  }
+  
+  if(ANO > 2004 & VARIAVEL == 'COR'){
+    dados <- dados %>%
+      filter(ano == ANO & !(is.na(cor_raca_descricao) | is.na(cbo_familia))) %>% 
+      mutate(cor_raca_descricao_cat = case_when(
+        cor_raca_descricao == 'Branca' ~ 'BR',
+        cor_raca_descricao %in% c('Preta','Parda') ~ 'PP',
+        .default = NA_character_
+      )) %>% 
+      select(ano,cor_raca_descricao_cat,cbo_familia,total_vinculos) %>% 
+      na.omit() %>% 
+      group_by(ano, grupo = cor_raca_descricao_cat,ocupacao = cbo_familia) %>% 
+      summarise(n = sum(total_vinculos)) %>% 
+      ungroup()
+    qtd_categorias = dados$grupo %>% unique() %>% length()
+  }
+  
+  if(ANO > 2004 & VARIAVEL == 'COR_SEXO'){
+    dados <- dados %>%
+      filter(ano == ANO & !(is.na(cor_raca_descricao) | is.na(cor_raca_descricao) | is.na(cbo_familia))) %>% 
+      mutate(cor_sexo_cat = case_when(
+        sexo_descricao == "Homem" & cor_raca_descricao == 'Branca' ~ 'H_BR',
+        sexo_descricao == "Homem" & cor_raca_descricao %in% c('Preta','Parda') ~ 'H_PP',
+        sexo_descricao == "Mulher" & cor_raca_descricao == 'Branca' ~ 'M_BR',
+        sexo_descricao == "Mulher" & cor_raca_descricao %in% c('Preta','Parda') ~ 'M_PP',
+        .default = NA_character_
+      )) %>% 
+      select(ano,cor_sexo_cat,cbo_familia,total_vinculos) %>% 
+      na.omit() %>% 
+      group_by(ano, grupo = cor_sexo_cat,ocupacao = cbo_familia) %>% 
+      summarise(n = sum(total_vinculos)) %>% 
+      ungroup()
+    qtd_categorias = dados$grupo %>% unique() %>% length()
+  }
+  
+  ## verificar se tem valores de todas as categorias em cada família de ocupações
+  # por exemplo, se tem homem e mulher em cada familia
+  
+  dados_completo <- data.frame(
+    ocupacao = rep(unique(dados$ocupacao),each=qtd_categorias),
+    grupo = rep_len(unique(dados$grupo),length.out = qtd_categorias*length(unique(dados$ocupacao)))
+  )
+  
+  dados <- dados_completo %>% left_join(dados) %>% 
+    mutate(familia_vazia = ifelse(is.na(n),ocupacao,NA_character_))
+  
+  familias_ocupacoes_remover <- na.omit(dados$familia_vazia)
+  
+  dados <- dados %>% 
+    filter(!(ocupacao %in% familias_ocupacoes_remover)) %>% 
+    select(ocupacao,grupo,n)
+  
+}
+
+mut = mutual_total(data = dados,
+                   group = "grupo",
+                   unit = "ocupacao",
+                   weight = "n")
+
+if(VARIAVEL != 'COR_SEXO'){
+  diss = dissimilarity(data = dados,
+                     group = "grupo",
+                     unit = "ocupacao",
+                     weight = "n")
+}else{
+  diss$est[1] = NA_real_
+}
+# resultados inicial  # PRIMEIRA VEZ
+
+# resultados <- data.frame(
+#   ano = ANO,
+#   variavel = VARIAVEL,
+#   m_ = mut$est[1],
+#   h_ = mut$est[2],
+#   d_ = diss$est[1]
+# )
+
+# fazer dataframe para armazenar informacao
+
+
+resultados_ano <- data.frame(
+  ano = ANO,
+  variavel = VARIAVEL,
+  m_ = mut$est[1],
+  h_ = mut$est[2],
+  d_ = diss$est[1]
 )
 
+resultados <- rbind(resultados,resultados_ano)
+
+openxlsx2::write_xlsx(resultados,'./dados/resultado_segregacao_16072025.xlsx')
 
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################ ANTIGO
+###############
+
+###############
+###############
+
+
+###############
+###############
+
+
+###############
+###############
+
+###############
+###############
 
 
 

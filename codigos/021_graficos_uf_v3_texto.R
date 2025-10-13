@@ -307,10 +307,15 @@ data = data %>%
     variacao_absoluta = total - lag,
     descricao_periodo = rep("2004-2021",5*27),
     variacao_relativa = round(((total/lag)-1)*100,1)
-  ) %>% 
+  ) #%>% 
   select(
     descricao_periodo,codigo_uf,cor,cor_descricao,variacao_absoluta,variacao_relativa)
 
+  
+data_x = data %>% filter(
+  cor_descricao %in% c('Branca','Preta','Parda'),
+  codigo_uf != 'RR')  
+  
 ggplot(data %>% 
          filter(
             cor_descricao %in% c('Branca','Preta','Parda'),
@@ -318,9 +323,16 @@ ggplot(data %>%
       aes(x=codigo_uf, y=variacao_relativa,fill=cor_descricao)
   ) + 
   geom_col() +
-  facet_wrap(~cor_descricao,ncol=1,scales="free_y") +
+  facet_wrap(~cor_descricao,ncol=1,scales="free") +
   scale_fill_manual(values = c('#7AD151','#2A788E','#414487')) +
-  labs(caption = 'Fonte: Rais. Notas: Escala livre no eixo vertical. Sem dados de Roraima. Dados de Rondônia são de 2020 em relação a 2004.') +
+  
+################# VARIACAO RELATIVA NO NIVEL BRASIL #################
+# NOTA DO GRAFICO
+labs(caption = 'Fonte: Rais. Notas: Escala livre no eixo vertical. Sem dados de Roraima. Dados de Rondônia são de 2020 em relação a 2004. \nA variação no nível Brasil para cor ou raça Branca é de -5%, para Parda 1% e para Preta 27%.') +
+################# VARIACAO RELATIVA NO NIVEL BRASIL #################
+  
+  
+  
   ylab('Variação de vínculos') +
   theme_ipea() +
   theme(
@@ -563,9 +575,16 @@ data = data %>%
 ggplot(data %>% filter(codigo_uf != 'RR'),
        aes(x=codigo_uf, y=variacao_relativa,fill=sexo)) + 
   geom_col() +
-  facet_wrap(~sexo,ncol=1,scales="free_y") +
+  facet_wrap(~sexo,ncol=1,scales="free") +
   scale_fill_manual(values = cores_sexo) +
   labs(caption = 'Fonte: Rais. Notas: Escala livre no eixo vertical. Sem dados de Roraima. \nDados de Rondônia são de 2020 em relação a 1985. \nDados de Tocantins são de 2021 em relação a 1989.') +
+  
+################# VARIACAO RELATIVA NO NIVEL BRASIL #################
+# NOTA DO GRAFICO
+  labs(caption = 'Fonte: Rais. Notas: Escala livre no eixo vertical. Sem dados de Roraima. \nDados de Rondônia são de 2020 em relação a 1985. Dados de Tocantins são de 2021 em relação a 1989.\nA variação relativa para as mulheres é de 28%; para os homens, de 30%.') +
+################# VARIACAO RELATIVA NO NIVEL BRASIL #################
+
+  
   ylab('Variação de vínculos') +
   theme_ipea() +
   theme(
@@ -1162,7 +1181,7 @@ variacao4 %>%
        subtitle = 'Variação de vínculos públicos no poder Executivo e nível estadual (2004 e 2021)',
        caption = texto_caption) +
   ylab('Variação de vínculos') +
-  theme_ipea() +
+  theme_ipea() #+
   scale_y_continuous(labels = unit_format(unit = "Mil", scale = 1e-3),
                      limits = c(-100e3,30e3),
                      breaks = seq(-100e3,30e3,20e3)) +

@@ -1,3 +1,42 @@
+###############################################################
+INTRO
+
+Em setembro/outubro de 2025 houve revisão de pareceristas
+para uma publicação em BAPI e foram pedidos ajustes nos 
+gráficos
+
+códigos trabalhados são os da versão 3 (v3 no nome do código)
+###############################################################
+
+
+# AJUSTES ESPECIAIS PARA VERSÃO FINAL DO BAPI
+
+## IPEA PLOT
+ - separar códigos especiais para versão do ipeaplot para editoração
+ 
+ 
+## gráficos ajustados e ajustes
+gráfico 5 - nota de variação no nível brasil e inserir UFs no eixo em todos os gráficos
+gráfico 9 - nota de variação no nível brasil e inserir UFs no eixo em todos os gráficos
+gráfico 7 - formato de ipeaplot - código com o Christian
+
+## gráficos no BAPI (editados *)
+
+ - BAPI 1 - Total de vínculos públicos no poder Executivo e nível estadual (1985 - 2021)
+ - BAPI 2 - Remuneração média de vínculos públicos nos níveis federal, estadual e municipal (1985 - 2021)
+ - BAPI 3 - Remuneração média entre os quintos de remuneração de vínculos públicos no poder Executivo e nível estadual (1985 - 2021)
+ - BAPI 4 - Razão entre o mais alto (nono) e o menor (primeiro) decil de remuneração de vínculos públicos no poder Executivo e nível estadual (1985 - 2021)
+ - BAPI 5* - Variação relativa de vínculos públicos no poder Executivo e nível estadual entre 2004 e 2021 por cor para cada Unidade da Federação
+ - BAPI 6 - Razão de vínculos de brancos para cada vínculo de negro, por UF (2004 - 2021)
+ - BAPI 7* - Índice de representatividade burocrática, por UF (2021)
+ - BAPI 8 - Razão da remuneração média de vínculos públicos de pessoas brancas, pardas e pretas do poder Executivo estadual, por Unidade da Federação (2004 - 2021)
+ - BAPI 9* - Variação relativa de vínculos públicos no poder Executivo e nível estadual entre 1985 e 2021 por sexo para cada Unidade da Federação
+ - BAPI 10- Razão da remuneração média de vínculos públicos no poder Executivo e nível estadual entre homens e mulheres, por Unidade da Federação (1985 - 2021)
+
+
+
+
+
 TRATAMENTOS DOS DADOS
 
 V2 - JUNHO DE 2025
