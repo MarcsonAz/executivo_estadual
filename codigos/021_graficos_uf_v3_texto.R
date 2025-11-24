@@ -75,8 +75,7 @@ data = base_completa$total_uf_sexo
 
 siglas = tibble::tibble(
   codigo = data$codigo_uf,
-  sigla = data$sigla_uf
-) %>% 
+  sigla = data$sigla_uf) %>% 
   distinct() %>% 
   na.omit() %>% 
   arrange(codigo)

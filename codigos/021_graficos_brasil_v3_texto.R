@@ -104,6 +104,7 @@ data <- base_completa$rem_media_brasil_nf %>%
                             levels = c("Federal", "Estadual","Municipal"),
                             labels = c("Federal", "Estadual","Municipal")))
 
+# 
 # f - BDB542
 # e - 36809A
 # m - 9A3636
