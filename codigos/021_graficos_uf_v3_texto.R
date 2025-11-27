@@ -361,7 +361,7 @@ write.csv2(data,"./dados/uf_total_cor_variacao_relativa.csv")
 
 
 
-# Gráfico 8 #########################################################
+# Gráfico 8 TD - #########################################################
 
 # 1 - tratamento
 data = base_completa$total_uf_cor
@@ -386,7 +386,7 @@ data = data %>%
   select(ano,codigo_uf,razao_b_pp)
 
 
-# 2 - grafico
+# 2 - grafico para o texto - o do apendice esta abaixo
 ggplot(data) +
   geom_line(aes(x=ano, y=razao_b_pp)) +
   facet_wrap(~codigo_uf,ncol=4) + #,scales="free_y") +
@@ -419,6 +419,53 @@ ggsave(filename = "./graficos/uf_total_cor_razao.png",
 # eixo Y livre
 #ggsave(filename = "./graficos/uf_total_cor_razao_apendice_eixo_y_livre.png",
  #      plot = last_plot(), width = 9.10, height = 11.10, units = "in", dpi = 300)
+
+# gráfico par aapêndice
+# 2 - grafico para o texto - o do apendice esta abaixo
+
+estados_destaque <- c("AC","TO","MA","CE","PB","PE","PR","SC","RS","DF")
+data = data %>% 
+  mutate(
+    codigo_uf_desc = ifelse(codigo_uf %in% estados_destaque,as.character(codigo_uf),"Outros"),
+    codigo_uf_desc = factor(codigo_uf_desc, levels = c(estados_destaque, "Outros")))
+
+cores_ <- c(RColorBrewer::brewer.pal(10, "Paired"), "gray80")
+
+ggplot(data) +
+  geom_line(aes(x=ano, y=razao_b_pp,group = codigo_uf,color=codigo_uf_desc),
+            linewidth=1.1,alpha=0.65) +
+  scale_color_manual(values = cores_) +
+  
+  labs(caption = 'Fonte: Rais') +
+  ylab('Razão de vínculos') +
+  theme_ipea() +
+  scale_y_continuous(limits = c(0,32),
+                     breaks = seq(0,31,5)) +
+  scale_x_continuous(limits = c(2003,2022), breaks = sort(seq(2021,2004,-5))) +
+  
+  guides(color = guide_legend(nrow = 1, byrow = TRUE)) +
+  theme(
+    legend.position = "top",
+    legend.title = element_blank(),
+    
+    plot.title = element_blank(),
+    plot.subtitle = element_blank(),
+    
+    axis.text.x = element_text(size = 10, color="#141414"),
+    axis.title.x = element_blank(),
+    
+    axis.text.y = element_text(size = 8, margin = margin(l = 0), color="#141414"),
+    axis.title.y = element_text(size = 12,vjust = -2),
+    
+    #strip.text = element_text(size = 12, color="#141414"),
+    plot.caption = element_text(size = 10,vjust = 0, color="#141414"))
+
+
+ggsave(filename = "./graficos/uf_total_cor_razao2.png",
+       plot = last_plot(), width = 7.44, height = 4.68, units = "in", dpi = 300)
+
+
+
 
 
 
